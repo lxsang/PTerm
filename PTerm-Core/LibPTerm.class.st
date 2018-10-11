@@ -19,6 +19,7 @@ LibPTerm class >> F_SETFL [
 
 { #category : #'as yet unclassified' }
 LibPTerm class >> O_NONBLOCK [
+	Smalltalk os isMacOS ifTrue: [ ^4 ].
 	^4000
 ]
 
@@ -113,7 +114,7 @@ LibPTerm >> kill: pid signal: sig [
 { #category : #accessing }
 LibPTerm >> master [
 	|fd st|
-	fd := self openpt: self class O_RDWR.
+	fd := self openpt: (self class O_RDWR bitOr: self class O_NONBLOCK).
 	fd < 0 ifTrue:[^self error:'Error on on posix_openpt()'].
 	st := self grantpt: fd.
 	st ~= 0 ifTrue: [ self closept: fd. ^ self error: 'Error on grantpt()' ].
@@ -155,7 +156,12 @@ LibPTerm >> read: fd buffer: buff size: size [
 
 { #category : #'as yet unclassified' }
 LibPTerm >> setNonBlocking: fd [
-	^ self fnctl: fd action: self class F_SETFL flag: self class O_NONBLOCK  
+	|flag st|
+	flag := self fnctl: fd action: self class F_GETFL flag:0.
+	flag := flag bitOr: self class O_NONBLOCK.
+	st := self fnctl: fd action: self class F_SETFL flag: flag.
+	st = 0 ifFalse:[^self error: 'Cannot set nonblocking'].
+	^st
 ]
 
 { #category : #'as yet unclassified' }

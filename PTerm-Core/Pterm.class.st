@@ -1,5 +1,5 @@
 Class {
-	#name : #Pterm,
+	#name : #PTerm,
 	#superclass : #Object,
 	#instVars : [
 		'master',
@@ -9,22 +9,22 @@ Class {
 }
 
 { #category : #'instance creation' }
-Pterm >> lib [ 
+PTerm >> lib [ 
 	^ LibPTerm singleton 
 ]
 
 { #category : #accessing }
-Pterm >> master [
+PTerm >> master [
 	^ master
 ]
 
 { #category : #accessing }
-Pterm >> master: anObject [
+PTerm >> master: anObject [
 	master := anObject
 ]
 
 { #category : #'instance creation' }
-Pterm >> nextPut: text [
+PTerm >> nextPut: text [
 	|buff|
 	self master ifNil:[^self].
 	buff := ExternalAddress fromString: text.
@@ -32,17 +32,17 @@ Pterm >> nextPut: text [
 ]
 
 { #category : #'instance creation' }
-Pterm >> nextPutCr:text [
+PTerm >> nextPutCr:text [
 	self nextPut: text, Character cr asString
 ]
 
 { #category : #accessing }
-Pterm >> pid [
+PTerm >> pid [
 	^ pid
 ]
 
 { #category : #'instance creation' }
-Pterm >> spawn [
+PTerm >> spawn [
 	|buff status argv xarray fname fileaction pid count data|
 	"allocate the file action structure (void* for now)"
 	status := FFIUInt32  newBuffer.
@@ -67,18 +67,22 @@ Pterm >> spawn [
 ]
 
 { #category : #'instance creation' }
-Pterm >> spawn: cmd args: argv [
-	| status xarray fname fileaction ret|
+PTerm >> spawn: cmd args: argv [
+	| status xarray fname fileaction |
 	"allocate the file action structure (void* for now)"
 	status := FFIUInt32  newBuffer.
 	xarray := self lib stringArrayOf: argv.
 	master := self lib master.
-	ret := self lib setNonBlocking: master.
-	ret ~= 0 ifTrue:[^self error: 'cannot set nonblocking'].
+	"self lib setNonBlocking: master."
 	fname := self lib ptsname: self master.
 	fileaction  := self lib fileActionSettingFor:fname.
 	[ self waitForOutput  ] fork.
-	self lib posixSpawn: status process: cmd fileAction: fileaction fileAttr: nil  argv: xarray getHandle  env: nil.
+	self lib posixSpawn: status 
+			process: cmd
+			fileAction: fileaction
+			fileAttr: nil
+			argv: xarray getHandle
+			env: nil.
 	pid := status integerAt: 1 size: 4 signed:true.
 	"self lib kill: pid signal: self lib class SIGKILL."
 	"self lib waitpit: pid status: status noHang: 0."
@@ -87,7 +91,7 @@ Pterm >> spawn: cmd args: argv [
 ]
 
 { #category : #'instance creation' }
-Pterm >> waitForOutput [
+PTerm >> waitForOutput [
 	|data buff count ws status|
 	ws := 0.
 	self master ifNil: [ ^self ].
