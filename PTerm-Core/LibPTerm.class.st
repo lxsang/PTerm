@@ -28,6 +28,16 @@ LibPTerm >> closept: fd [
 ]
 
 { #category : #'as yet unclassified' }
+LibPTerm >> exec: command [
+	^ LibC uniqueInstance system: command
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm >> fork [
+	^ LibC uniqueInstance fork 
+]
+
+{ #category : #'as yet unclassified' }
 LibPTerm >> grantpt: fd [
 	^ self ffiCall: #(int grantpt(int fd)) module: LibC
 ]
@@ -70,6 +80,16 @@ LibPTerm >> slave: fd [
 	|name|
 	name := self ptsname: fd.
 	^self open: name mode: self class O_RDWR  
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm >> spawn [
+	|pid|
+	[pid := self fork.
+	pid = 0 ifTrue: [
+		self exec: 'ls -al'.	
+		Smalltalk exit: 1.
+	]] valueUnpreemptively.
 ]
 
 { #category : #'as yet unclassified' }
