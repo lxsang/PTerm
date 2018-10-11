@@ -6,8 +6,8 @@ Class {
 
 { #category : #baselines }
 BaselineOfPTerm >> baseline: spec [
-spec for: #common do: [ 
 	<baseline>
+spec for: #common do: [ 
 	"spec preLoadDoIt: #preload."
 	spec
 		package: 'PTerm-Core';
