@@ -167,6 +167,7 @@ LibPTerm >> setNonBlocking: fd [
 { #category : #'as yet unclassified' }
 LibPTerm >> stringArrayOf: anArray [
 	|xarray|
+	anArray  ifNil: [ ^nil ].
 	xarray := FFIExternalArray externalNewType: 'char*' size: anArray size + 1. 
 	anArray withIndexDo: [ :v :i| xarray at:i put: (ExternalAddress fromString: v) ]. 
 	xarray at:anArray size + 1 put: (ExternalAddress  fromAddress: 0).

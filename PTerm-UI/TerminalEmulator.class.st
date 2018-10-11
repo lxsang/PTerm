@@ -29,13 +29,6 @@ Class {
 	#category : #'PTerm-UI'
 }
 
-{ #category : #utilities }
-TerminalEmulator class >> compileLibrary [
-
-	"compile the required FFI library. GCC needs to be installed."
-	PseudoTTYLib uniqueInstance compile
-]
-
 { #category : #'world menu' }
 TerminalEmulator class >> icon [
 	^ self iconNamed: #morph
@@ -88,7 +81,7 @@ TerminalEmulator class >> openBash [
 	| win |
 
 	win := self open.
-	(PseudoTTYEndpoint command: '/bin/bash' arguments: {'-i'}) asProtocolStack
+	(PTerm new spawn: '/bin/bash' args: {'bash'} env: {'TERM=linux'}) asProtocolStack
 		push: TerminalEmulatorXterm new;
 		push: win tty;
 		install;

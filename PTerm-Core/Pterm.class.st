@@ -1,12 +1,43 @@
 Class {
 	#name : #PTerm,
-	#superclass : #Object,
+	#superclass : #ProtocolEndpoint,
 	#instVars : [
 		'master',
-		'pid'
+		'pid',
+		'announcer',
+		'sub',
+		'active'
 	],
 	#category : #'PTerm-Core'
 }
+
+{ #category : #accessing }
+PTerm >> announcer [
+	^ announcer
+]
+
+{ #category : #protocol }
+PTerm >> close [
+	self master ifNotNil: [
+		self nextPutCr: 'exit'	
+	]
+]
+
+{ #category : #accessing }
+PTerm >> downcall: data [
+	^self nextPut: data asCharacter asString
+]
+
+{ #category : #protocol }
+PTerm >> initialize [ 
+	announcer := Announcer new.
+	active := false
+]
+
+{ #category : #protocol }
+PTerm >> isConnected [ 
+	^ active
+]
 
 { #category : #'instance creation' }
 PTerm >> lib [ 
@@ -21,6 +52,11 @@ PTerm >> master [
 { #category : #accessing }
 PTerm >> master: anObject [
 	master := anObject
+]
+
+{ #category : #protocol }
+PTerm >> name [ 
+	^'PTerm'
 ]
 
 { #category : #'instance creation' }
@@ -39,6 +75,12 @@ PTerm >> nextPutCr:text [
 { #category : #accessing }
 PTerm >> pid [
 	^ pid
+]
+
+{ #category : #protocol }
+PTerm >> run [
+	sub := self announcer when: PTermDataEvent  do: [ :e|up upcallAll: e data].
+
 ]
 
 { #category : #'instance creation' }
@@ -68,25 +110,32 @@ PTerm >> spawn [
 
 { #category : #'instance creation' }
 PTerm >> spawn: cmd args: argv [
-	| status xarray fname fileaction |
+	^self spawn: cmd args: argv  env: nil 
+]
+
+{ #category : #'instance creation' }
+PTerm >> spawn: cmd args: argv env:envs [
+	| status xarray fname fileaction earray|
 	"allocate the file action structure (void* for now)"
 	status := FFIUInt32  newBuffer.
 	xarray := self lib stringArrayOf: argv.
+	earray  := self lib stringArrayOf: envs.
 	master := self lib master.
 	"self lib setNonBlocking: master."
 	fname := self lib ptsname: self master.
 	fileaction  := self lib fileActionSettingFor:fname.
-	[ self waitForOutput  ] fork.
+	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	self lib posixSpawn: status 
 			process: cmd
 			fileAction: fileaction
 			fileAttr: nil
 			argv: xarray getHandle
-			env: nil.
+			env: earray getHandle.
 	pid := status integerAt: 1 size: 4 signed:true.
 	"self lib kill: pid signal: self lib class SIGKILL."
 	"self lib waitpit: pid status: status noHang: 0."
 	fileaction free.
+	active := true.
 	Transcript show: 'Finish'.
 ]
 
@@ -100,14 +149,16 @@ PTerm >> waitForOutput [
 	[ 
 		count := self lib read: self master buffer: buff  size: 2048.
 		count > 0 ifTrue:[
-			data :=  String
-			newFrom: (FFIExternalArray fromHandle: buff type: 'char' size: count).
-			Transcript show: data;cr.
+			data :=  String newFrom: (FFIExternalArray fromHandle: buff type: 'char' size: count).
+			self announcer announce: (PTermDataEvent data: data asByteArray ).
 		].
 		self pid ifNotNil: [ 
 			ws := self lib waitpid: self pid status: status noHang: 1
 		].
 	ws = 0
-	] whileTrue: [ count > 0 ifFalse:[200 milliSeconds wait ]].
+	] whileTrue: [ count > 0 ifFalse:[ 300 milliSeconds wait ]].
+	active := false.
+	self lib closept: self master.
+	self announcer unsubscribe: sub.
 	Transcript  show: 'Finish read'.
 ]
