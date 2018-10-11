@@ -11,6 +11,44 @@ LibPTermTest >> classToBeTested [
 ]
 
 { #category : #tests }
+LibPTermTest >> testFileActionAddDup [
+	|lib pointer st|
+	lib := LibPTerm singleton.
+	pointer := ExternalAddress allocate: lib class sizeOfFileAction.
+	self assert: [ pointer ~= nil ].
+	st := lib fileActionInit: pointer.
+	self assert: [ st = 0 ].
+	st := lib fileActionAddOpen: pointer fd: 1  fileName: '/tmp/test.txt'  flag: lib class O_RDWR   mode: 0644.
+	self assert: [ st = 0 ].
+	st := lib fileActionAddDup: pointer fd: 1  newFd: 2.
+	self assert: [ st = 0 ]. 
+	pointer free.
+]
+
+{ #category : #tests }
+LibPTermTest >> testFileActionAddOpen [
+	|lib pointer st|
+	lib := LibPTerm singleton.
+	pointer := ExternalAddress allocate: lib class sizeOfFileAction.
+	self assert: [ pointer ~= nil ].
+	st := lib fileActionInit: pointer.
+	self assert: [ st = 0 ].
+	st := lib fileActionAddOpen: pointer fd: 1  fileName: '/tmp/test.txt'  flag: lib class O_RDWR   mode: 0644.
+	self assert: [ st = 0 ].
+	pointer free.
+]
+
+{ #category : #tests }
+LibPTermTest >> testFileActionInit [
+	|lib pointer st|
+	lib := LibPTerm singleton.
+	pointer := ExternalAddress allocate: lib class sizeOfFileAction.
+	st := lib fileActionInit: pointer.
+	pointer free.
+	self assert: [ st = 0 ].
+]
+
+{ #category : #tests }
 LibPTermTest >> testGrant [
 	|lib fd st|
 	lib := LibPTerm singleton.
@@ -32,17 +70,6 @@ LibPTermTest >> testOpenpt [
 	fd := LibPTerm singleton openpt: 2. 
 	self assert: [ fd >= 0 ].
 	LibPTerm singleton closept: fd
-]
-
-{ #category : #tests }
-LibPTermTest >> testSlave [
-	|lib fdm fds|
-	lib := LibPTerm singleton.
-	fdm := lib master.
-	fds := lib slave:fdm.
-	lib closept:fdm.
-	self assert: [ fds >= 0 ].
-	lib closept: fds.
 ]
 
 { #category : #tests }
