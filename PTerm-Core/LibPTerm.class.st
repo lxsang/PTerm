@@ -8,8 +8,28 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+LibPTerm class >> F_GETFL [
+	^3
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm class >> F_SETFL [
+	^4
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm class >> O_NONBLOCK [
+	^4000
+]
+
+{ #category : #'as yet unclassified' }
 LibPTerm class >> O_RDWR [
 	^2
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm class >> SIGKILL [
+	^ 9
 ]
 
 { #category : #'instance creation' }
@@ -59,16 +79,35 @@ LibPTerm >> fileActionSettingFor:name [
 	ptr := ExternalAddress allocate: self class sizeOfFileAction.
 	st := self fileActionInit: ptr.
 	st = 0 ifFalse:[^ self error:'Error posix_spawn_file_actions_init'].
-	st := self fileActionAddOpen: ptr fd: 1  fileName: name  flag: self class O_RDWR  mode: 0644. 
+	st := self fileActionAddOpen: ptr fd: 0  fileName: name  flag: self class O_RDWR  mode: 0644. 
 	st = 0 ifFalse: [ ^ self error:'Error posix_spawn_file_actions_open' ].
-	st := self fileActionAddDup: ptr fd: 1  newFd: 2.
+	"st := self fileActionAddDup: ptr fd: 0  newFd: 0.
+	st = 0 ifFalse: [ ^self error: 'Error posix_spawn_file_action_dup2' ]."
+	st := self fileActionAddDup: ptr fd: 0  newFd: 1.
+	st = 0 ifFalse: [ ^self error: 'Error posix_spawn_file_action_dup2' ].
+	st := self fileActionAddDup: ptr fd: 0  newFd: 2.
 	st = 0 ifFalse: [ ^self error: 'Error posix_spawn_file_action_dup2' ].
 	^ ptr
 ]
 
 { #category : #'as yet unclassified' }
+LibPTerm >> fnctl: fd action: action flag: flag [
+ 	^ self ffiCall: #(int fcntl(int fd, int action, int flag)) module: LibC 
+]
+
+{ #category : #writing }
+LibPTerm >> getReadWriteBufferOf: size [
+	^(FFIExternalArray externalNewType: 'char' size: size) getHandle
+]
+
+{ #category : #'as yet unclassified' }
 LibPTerm >> grantpt: fd [
 	^ self ffiCall: #(int grantpt(int fd)) module: LibC
+]
+
+{ #category : #accessing }
+LibPTerm >> kill: pid signal: sig [
+	^ self ffiCall: #(int kill(int pid, int sig)) module: LibC
 ]
 
 { #category : #accessing }
@@ -115,6 +154,11 @@ LibPTerm >> read: fd buffer: buff size: size [
 ]
 
 { #category : #'as yet unclassified' }
+LibPTerm >> setNonBlocking: fd [
+	^ self fnctl: fd action: self class F_SETFL flag: self class O_NONBLOCK  
+]
+
+{ #category : #'as yet unclassified' }
 LibPTerm >> stringArrayOf: anArray [
 	|xarray|
 	xarray := FFIExternalArray externalNewType: 'char*' size: anArray size + 1. 
@@ -129,8 +173,8 @@ LibPTerm >> unlockpt: fd [
 ]
 
 { #category : #'as yet unclassified' }
-LibPTerm >> waitpit: pid status: buf noHang: v [
-	^ self ffiCall: #(int wait(int pid, int * buf, int v)) module: LibC
+LibPTerm >> waitpid: pid status: buf noHang: v [
+	^ self ffiCall: #(int waitpid(int pid, int * buf, int v)) module: LibC
 ]
 
 { #category : #writing }
