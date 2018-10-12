@@ -177,7 +177,7 @@ PTerm >> xspawn: argv env:envs [
 	earray  := self lib stringArrayOf: envs.
 	master := self lib master.
 	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
-	pid := self lib xspawn: master argv: xarray getHandle  envs: earray getHandle.
+	pid := self lib ttySpawn: master argv: xarray getHandle  envs: earray getHandle.
 	"self lib kill: pid signal: self lib class SIGKILL."
 	"self lib waitpit: pid status: status noHang: 0."
 	Transcript show: 'Finish: ', pid asString; cr.

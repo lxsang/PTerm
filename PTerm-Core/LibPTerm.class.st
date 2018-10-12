@@ -246,6 +246,15 @@ LibPTerm >> stringArrayOf: anArray [
 	^ xarray 
 ]
 
+{ #category : #'as yet unclassified' }
+LibPTerm >> ttySpawn: fd argv: argv envs:envs [
+	[ ^ self xspawn: fd argv: argv  envs: envs ] on: Error do: [ 
+		"try tho compile it"
+		self class compile.
+		^self xspawn: fd argv: argv  envs: envs
+	] 
+]
+
 { #category : #'accessing platform' }
 LibPTerm >> unixModuleName [
 	^'libpterm.flib'
