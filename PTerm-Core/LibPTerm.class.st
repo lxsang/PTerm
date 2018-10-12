@@ -68,7 +68,7 @@ LibPTerm class >> new [
 
 { #category : #'instance creation' }
 LibPTerm class >> singleton [ 
-	^ instance ifNil: [ instance := super new ]
+	^ self uniqueInstance 
 ]
 
 { #category : #'as yet unclassified' }

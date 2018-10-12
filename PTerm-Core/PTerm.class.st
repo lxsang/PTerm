@@ -73,6 +73,12 @@ PTerm >> nextPutCr:text [
 	self nextPut: text, Character cr asString
 ]
 
+{ #category : #protocol }
+PTerm >> note: name with: val [
+	super note: name with: val.
+	name = #windowSize ifTrue: [ self setWinsize: val ].
+]
+
 { #category : #accessing }
 PTerm >> pid [
 	^ pid
@@ -87,6 +93,7 @@ PTerm >> run [
 { #category : #initialization }
 PTerm >> setWinsize: point [
 	|st|
+	Transcript show: 'resize window to ', point asString.
 	 st := self lib ttyWinSize: self master rows: point y  cols: point x.
 	st = 0 ifFalse: [ ^self error: 'Cannot set tty window size' ]
 ]

@@ -79,8 +79,7 @@ TerminalEmulator class >> open [
 TerminalEmulator class >> openBash [
 	
 	| win term |
-	term := (PTerm new xspawn: { '/bin/bash'} env: nil).
-	term setWinsize: 60@24.
+	term := (PTerm new xspawn: { '/bin/bash'} env: {'TERM=xterm'}).
 	"term := (PTermEcho new)."
 	win := self open.
 	term asProtocolStack
@@ -88,7 +87,7 @@ TerminalEmulator class >> openBash [
 		push: win tty;
 		install;
 		run.
-		win inspect.
+	win extent: win extent.
 	^ win	
 	
 ]

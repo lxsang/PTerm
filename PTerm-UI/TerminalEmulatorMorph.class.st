@@ -761,6 +761,7 @@ TerminalEmulatorMorph >> extent: newExtent [
 		m bounds: (org extent: ext).
 		org := org translateBy: lineSkip].
 	(useScrollbar and: [scrollFlop not]) ifTrue: [self showScrollbar].
+	self note: #resizeWindow with: nRows @ nCols
 ]
 
 { #category : #'character writing' }
