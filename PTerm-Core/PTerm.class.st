@@ -175,7 +175,6 @@ PTerm >> waitForOutput [
 	self lib closept: self master.
 	self announcer unsubscribe: sub.
 	master := nil.
-	up inspect.
 	up note: #endpointClosed with: true.
 	Transcript  show: 'Terminal closed'.
 ]
@@ -192,7 +191,7 @@ PTerm >> xspawn: argv env:envs [
 	xarray := self lib stringArrayOf: argv.
 	earray  := self lib stringArrayOf: envs.
 	xarray ifNotNil: [ xarray := xarray getHandle ].
-	earray ifNotNil: [ earray := earray getHandle ].
+	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
 	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	pid := self lib ttySpawn: master argv: xarray   envs: earray .
