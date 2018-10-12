@@ -29,6 +29,17 @@ Class {
 	#category : #'PTerm-UI'
 }
 
+{ #category : #'instance creation' }
+TerminalEmulator class >> environ [
+	|collection|
+	collection := OrderedCollection new.
+	Smalltalk os environment asDictionary keysAndValuesDo: [ :k :v|
+		collection add: k,'=',v
+	].
+	collection add: 'TERM=xterm'.
+	^collection 
+]
+
 { #category : #'world menu' }
 TerminalEmulator class >> icon [
 	^ self iconNamed: #morph
@@ -79,7 +90,7 @@ TerminalEmulator class >> open [
 TerminalEmulator class >> openBash [
 	
 	| win term |
-	term := (PTerm new xspawn: { '/bin/bash'} env: {'TERM=xterm'}).
+	term := (PTerm new xspawn: { '/bin/bash'. '-i'} env: self environ ).
 	"term := (PTermEcho new)."
 	win := self open.
 	term asProtocolStack
