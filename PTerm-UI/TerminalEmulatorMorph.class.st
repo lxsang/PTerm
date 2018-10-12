@@ -465,7 +465,6 @@ TerminalEmulatorMorph >> currentLine [
 
 { #category : #'cursor control' }
 TerminalEmulatorMorph >> cursorDown: n scrolling: scrollFlag [
-
 	self hideCursor.
 	n timesRepeat: [self cursorDownScrolling: scrollFlag].
 	self showCursor
@@ -480,10 +479,10 @@ TerminalEmulatorMorph >> cursorDownScrolling: scrollFlag [
 
 { #category : #'cursor control' }
 TerminalEmulatorMorph >> cursorLeft: n wrapping: wrapFlag [
-
 	self hideCursor.
 	n timesRepeat: [self cursorLeftWrapping: wrapFlag].
-	self showCursor
+	self showCursor.
+	"dont know why but need to signal changed here"
 ]
 
 { #category : #private }
@@ -1676,7 +1675,8 @@ TerminalEmulatorMorph >> setWindowTitle: aString [
 { #category : #'cursor control' }
 TerminalEmulatorMorph >> showCursor [
 
-	self currentLine cursorCol: x
+	self currentLine cursorCol: x.
+	self changed.
 ]
 
 { #category : #geometry }
@@ -1749,7 +1749,7 @@ TerminalEmulatorMorph >> tab [
 	 x < cols and: [(tabs at: x) not]]
 		whileTrue.
 	x := x min: cols.
-	self showCursor.
+	self showCursor
 ]
 
 { #category : #geometry }

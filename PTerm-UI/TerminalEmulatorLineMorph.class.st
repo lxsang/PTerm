@@ -4696,7 +4696,13 @@ TerminalEmulatorLineMorph >> drawCursorOn: aCanvas [
 				frameAndFillRectangle: (bounds origin + (pitch * (cc - 1) @ 0) extent: pitch @ font height)
 				fillColor: fg
 				borderWidth: 1
-				borderColor: fg
+				borderColor: fg.
+				aCanvas
+				drawString: lineState string
+				from: cc to: cc
+				in: (bounds insetOriginBy: (pitch * (cc - 1) @ 0) cornerBy: 0@0)
+				font: font
+				color: bg.
 				"background: fg"]
 			ifFalse: [aCanvas
 				frameRectangle: (bounds origin + (pitch * (cc - 1) @ 0) extent: pitch @ font height)
@@ -4712,7 +4718,7 @@ TerminalEmulatorLineMorph >> drawLineOn: aCanvas [
 		| fg bg |
 		fg := inputFg.
 		bg := inputBg.
-		port := bounds left + (l - 1 * pitch) @ bounds top corner: bounds left + (lineState stringSize * pitch) @ bounds bottom.
+		port := bounds left + ((l - 1) * pitch) @ bounds top corner: bounds left + (lineState stringSize * pitch) @ bounds bottom.
 		(em bitAnd: 64) == 64 ifTrue: [tmp := fg.  fg := bg.  bg := tmp].
 		aCanvas
 			fillRectangle: port fillStyle: bg;
