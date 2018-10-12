@@ -176,7 +176,7 @@ PTerm >> waitForOutput [
 	self announcer unsubscribe: sub.
 	master := nil.
 	up note: #endpointClosed with: true.
-	Transcript  show: 'Terminal closed'.
+	Transcript  show: 'Terminal closed'; cr.
 ]
 
 { #category : #'instance creation' }

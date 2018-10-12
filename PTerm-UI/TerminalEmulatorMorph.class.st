@@ -728,21 +728,21 @@ TerminalEmulatorMorph >> graphicsState: gs [
 { #category : #events }
 TerminalEmulatorMorph >> handlesKeyboard: evt [
 	"Answer whether we're interested in keyboard events."
-
-	^true "hasFocus or: [super handlesKeyboard: evt]"
+	^true
+	"^hasFocus or: [super handlesKeyboard: evt]"
 ]
 
 { #category : #events }
 TerminalEmulatorMorph >> handlesMouseDown: evt [
 	"Answer whether we're interested in mouse events."
-
-	^true "self isConnected and: [hasFocus or: [super handlesMouseDown: evt]]"
+	^true
+	"^self isConnected and: [hasFocus or: [super handlesMouseDown: evt]]"
 ]
 
 { #category : #events }
 TerminalEmulatorMorph >> handlesMouseOver: evt [
-
-	^true "hasFocus or: [super handlesMouseOver: evt]"
+	^true
+	"^hasFocus or: [super handlesMouseOver: evt]"
 ]
 
 { #category : #accessing }

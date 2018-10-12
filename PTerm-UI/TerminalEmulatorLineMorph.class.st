@@ -4778,6 +4778,7 @@ TerminalEmulatorLineMorph >> initialize [
 	"Initialize the receiver with empty contents."
 
 	self contents: TerminalEmulatorTextState new.
+	"self on: Character null ctrl  do: [ :e| Transcript show: 'stroke';cr ]"
 	"cursorColour := Color red."
 ]
 
