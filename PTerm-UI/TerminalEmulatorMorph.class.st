@@ -915,7 +915,7 @@ TerminalEmulatorMorph >> initializeTabs [
 TerminalEmulatorMorph >> initializeTeletype: size [
 	"Initialize the default behaviour: dumb terminal with local echo and default xterm VT options."
 
-	font := LogicalFont familyName: 'Source Code Pro' pointSize: 8.
+	font := LogicalFont familyName: 'Source Code Pro' pointSize: 9.
 	pitch := font widthOf: $W.
 	skip := font height.
 	cols := size x.
