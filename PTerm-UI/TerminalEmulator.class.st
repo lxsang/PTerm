@@ -171,7 +171,7 @@ TerminalEmulator >> extent: aPoint [
 TerminalEmulator >> initialize [
 
 	super initialize.
-	self setLabel: (windowTitle := iconTitle := 'Teletype').
+	self setLabel: (windowTitle := iconTitle := 'Terminal').
 	self extent: 10@10.
 ]
 

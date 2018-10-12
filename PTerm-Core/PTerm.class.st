@@ -190,7 +190,6 @@ PTerm >> xspawn: argv [
 { #category : #'instance creation' }
 PTerm >> xspawn: argv env:envs [
 	| xarray  earray|
-	"allocate the file action structure (void* for now)"
 	xarray := self lib stringArrayOf: argv.
 	earray  := self lib stringArrayOf: envs.
 	xarray ifNotNil: [ xarray := xarray getHandle ].
@@ -198,7 +197,5 @@ PTerm >> xspawn: argv env:envs [
 	master := self lib master.
 	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	pid := self lib ttySpawn: master argv: xarray   envs: earray .
-	"self lib kill: pid signal: self lib class SIGKILL."
-	"self lib waitpit: pid status: status noHang: 0."
-	Transcript show: 'Comand run on process: ', pid asString; cr.
+	Transcript show: 'Command run on process: ', pid asString; cr.
 ]
