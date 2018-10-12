@@ -33,10 +33,7 @@ Class {
 		'rv',
 		'ec',
 		'tabs',
-		'useScrollbar',
 		'scroll',
-		'scrollFlop',
-		'scrollRight',
 		'scrollOn',
 		'autoWrap',
 		'reverseWrap',
@@ -675,7 +672,7 @@ TerminalEmulatorMorph >> extent: newExtent [
 	submorphs doWithIndex: [:m :i |
 		m bounds: (org extent: ext).
 		org := org translateBy: lineSkip].
-	(useScrollbar and: [scrollFlop not]) ifTrue: [self showScrollbar].
+	self showScrollbar.
 	self note: #resizeWindow with: nRows @ nCols
 ]
 
@@ -794,20 +791,10 @@ TerminalEmulatorMorph >> highlightSelection [
 TerminalEmulatorMorph >> initScrollbar: frame [
 	"Initialize the scrollbar to fit in/around the given frame."
 
-	| width extent origin |
-	width := self scrollbarWidth.
-	scrollFlop
-		ifFalse:
-			[extent := (width) @ (frame height).
-			 origin := scrollRight
-				ifFalse: [frame origin]
-				ifTrue: [(frame right - width) @ (frame top)]]
-		ifTrue:
-			[extent := (width + borderWidth) @ (frame height + (borderWidth * 2)).
-			 origin := scrollRight
-				ifFalse: [(frame left - width - borderWidth) @ (frame top - borderWidth)]
-				ifTrue: [(frame right) @ (frame top - borderWidth)]].
-	scroll bounds: (origin extent: extent)
+	| width origin |
+	width := self scrollbarWidth .
+	origin := (frame right - width) @ frame top.
+	scroll bounds: (origin extent: width @ (frame height))
 ]
 
 { #category : #geometry }
@@ -875,11 +862,10 @@ TerminalEmulatorMorph >> initialize: size [
 	color := Color white.
 	inset := 2.
 	trackingSelection := false.
-	useScrollbar := false.
 	self
 		initializeTeletype: size;
 		initializeContent;
-		initializeScrollbar;
+		showScrollbar;
 		extent: self preferredExtent
 ]
 
@@ -894,14 +880,6 @@ TerminalEmulatorMorph >> initializeContent [
 	bottomLine := rows.
 	x := y := 1.
 	self banner do: [:c | self upcall: c asInteger]
-]
-
-{ #category : #'initialize-release' }
-TerminalEmulatorMorph >> initializeScrollbar [
-
-	scrollFlop := true.
-	scrollRight := true.
-	useScrollbar & scrollFlop not ifTrue: [self showScrollbar]
 ]
 
 { #category : #'initialize-release' }
@@ -951,7 +929,7 @@ TerminalEmulatorMorph >> initializeTeletype: size [
 	scrollOnOutput := true.
 	allow132 := true.
 	characterClasses := CharClass copy.
-	cursorColour := nil
+	cursorColour := nil.
 ]
 
 { #category : #'initialize-release' }
@@ -1106,21 +1084,6 @@ TerminalEmulatorMorph >> menuBlock: aBlock [
 	self flush
 ]
 
-{ #category : #menus }
-TerminalEmulatorMorph >> menuToggleScrollbar [
-
-	| scrollWidth |
-	self hideScrollbar.
-	useScrollbar := useScrollbar not.
-	scrollWidth := scrollFlop
-		ifTrue: [0]
-		ifFalse: [useScrollbar ifTrue: [self scrollbarWidth] ifFalse: [self scrollbarWidth negated]].
-	self initializeScrollbar.
-	systemWindow isNil
-		ifTrue: [self extent: self extent + (scrollWidth @ 0)]
-		ifFalse: [systemWindow extent: systemWindow extent + (scrollWidth @ 0)]
-]
-
 { #category : #accessing }
 TerminalEmulatorMorph >> metaSendsEscape [
 
@@ -1173,7 +1136,7 @@ TerminalEmulatorMorph >> mouseEnter: evt [
 	"The pointer just entered the window."
 
 	TextCursor beCursor.
-	useScrollbar & scrollFlop ifTrue: [self showScrollbar].
+	self showScrollbar.
 	super mouseEnter: evt
 ]
 
@@ -1182,7 +1145,7 @@ TerminalEmulatorMorph >> mouseLeave: evt [
 	"The cursor just left the window."
 
 	Cursor normal show.
-	useScrollbar & scrollFlop ifTrue: [self hideScrollbar].
+	self hideScrollbar.
 	super mouseLeave: evt
 ]
 
@@ -1280,7 +1243,7 @@ TerminalEmulatorMorph >> preferredExtent [
 	"Answer the extent that we would be given in an ideal world (no pun intended).  This is just the amout of space we need to display our contents, and no more."
 
 	| w h s |
-	s := (useScrollbar and: [scrollFlop not]) ifTrue: [self scrollbarWidth] ifFalse: [0].
+	s := self scrollbarWidth .
 	w := self borderWidth + s + inset + (cols * pitch) + inset + self borderWidth.
 	h := self borderWidth + inset + (rows * skip) + inset + self borderWidth.
 	^w@h
@@ -1417,7 +1380,6 @@ TerminalEmulatorMorph >> scrollbarMenuButtonPressed: evt [
 
 { #category : #scrolling }
 TerminalEmulatorMorph >> scrollbarValue: value [
-
 	| newStart |
 	newStart := (savedLines * value) rounded min: lines size - rows.
 	newStart == displayStart ifTrue: [^self].
@@ -1427,8 +1389,7 @@ TerminalEmulatorMorph >> scrollbarValue: value [
 
 { #category : #geometry }
 TerminalEmulatorMorph >> scrollbarWidth [
-
-	^ScrollPane new scrollbarWidth
+	^12
 ]
 
 { #category : #selection }
@@ -1685,7 +1646,8 @@ TerminalEmulatorMorph >> showScrollbar [
 
 	scroll isNil
 		ifTrue:
-			[scroll := ScrollBar new model: self slotName: 'scrollbar'; initializeEmbedded: scrollFlop not.
+			[scroll := ScrollBar new model: self;
+			setValueSelector: #scrollbarValue:.
 			 self
 				addMorphBack: scroll;
 				initScrollbar: self layoutBounds;
@@ -1763,12 +1725,9 @@ TerminalEmulatorMorph >> textBounds [
 TerminalEmulatorMorph >> textBounds: outer [
 	"Answer just the bounds of the text -- excluding border, scroll and inset."
 
-	| width left right inner |
+	|  left right inner |
 	left := right := 0.
-	(useScrollbar & scrollFlop not)
-		ifTrue:
-			[width := self scrollbarWidth.
-			 scrollRight ifTrue: [right := width] ifFalse: [left := width]].
+	right := self scrollbarWidth.
 	inner := outer insetBy: inset.
 	^(inner left + left) @ (inner top) corner: (inner right - right) @ (inner bottom)
 ]
