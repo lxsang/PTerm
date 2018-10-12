@@ -141,7 +141,6 @@ TerminalEmulator >> doFastWindowReframe: ptName [
 
 { #category : #connections }
 TerminalEmulator >> endpointClosed [
-	Transcript show: 'close endpoint'.
 	tty delete.
 	super delete.
 	"AutoClose ifTrue: [^self delete].

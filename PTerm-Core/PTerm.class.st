@@ -92,8 +92,8 @@ PTerm >> run [
 { #category : #initialization }
 PTerm >> setWinsize: point [
 	|st|
-	Transcript show: 'resize window to ', point asString; cr.
-	 st := self lib ttyWinSize: self master rows: point y  cols: point x.
+	"Transcript show: 'resize window to ', point asString; cr."
+	st := self lib ttyWinSize: self master rows: point y  cols: point x.
 	st = 0 ifFalse: [ ^self error: 'Cannot set tty window size' ]
 ]
 
@@ -170,7 +170,7 @@ PTerm >> waitForOutput [
 			ws := self lib waitpid: self pid status: status noHang: 1
 		].
 	ws = 0
-	] whileTrue: [ "count > 0 ifFalse:[ 300 milliSeconds wait ]"].
+	] whileTrue: [ count > 0 ifFalse:[ 100 milliSeconds wait ]].
 	active := false.
 	self lib closept: self master.
 	self announcer unsubscribe: sub.
@@ -197,5 +197,5 @@ PTerm >> xspawn: argv env:envs [
 	pid := self lib ttySpawn: master argv: xarray   envs: earray .
 	"self lib kill: pid signal: self lib class SIGKILL."
 	"self lib waitpit: pid status: status noHang: 0."
-	Transcript show: 'Finish: ', pid asString; cr.
+	Transcript show: 'Comand run on process: ', pid asString; cr.
 ]
