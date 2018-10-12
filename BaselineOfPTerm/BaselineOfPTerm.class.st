@@ -10,7 +10,7 @@ BaselineOfPTerm >> baseline: spec [
 spec for: #common do: [ 
 	"spec preLoadDoIt: #preload."
 	spec
-		package: 'PTerm-Core' width:  [ spec requires: #('PTerm-Protocol') ];
+		package: 'PTerm-Core' with:  [ spec requires: #('PTerm-Protocol') ];
 		package: 'PTerm-Test';
 		package: 'PTerm-Protocol';
 		package: 'PTerm-UI';
