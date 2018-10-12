@@ -1432,7 +1432,7 @@ TerminalEmulatorMorph >> newline [
 
 { #category : #protocol }
 TerminalEmulatorMorph >> note: aSymbol with: anObject [
-
+	Transcript show: 'Up note ', aSymbol; cr.
 	aSymbol == #endpointClosed
 		ifTrue:
 			[^(systemWindow isKindOf: TerminalEmulator)

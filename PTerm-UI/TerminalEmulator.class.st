@@ -95,7 +95,8 @@ TerminalEmulator class >> openBash [
 { #category : #connections }
 TerminalEmulator >> closeConnection [
 
-	(self confirm: 'Really disconnect?') ifTrue: [tty session endpoint close]
+	(self confirm: 'Really disconnect?') ifTrue: [tty session endpoint close. ^true].
+	^ false
 ]
 
 { #category : #events }
@@ -107,7 +108,7 @@ TerminalEmulator >> collapseOrExpand [
 
 { #category : #events }
 TerminalEmulator >> delete [
-
+	self closeConnection ifFalse: [ ^self ].
 	tty delete.
 	^super delete
 
@@ -140,10 +141,12 @@ TerminalEmulator >> doFastWindowReframe: ptName [
 
 { #category : #connections }
 TerminalEmulator >> endpointClosed [
-
-	AutoClose ifTrue: [^self delete].
+	Transcript show: 'close endpoint'.
+	tty delete.
+	super delete.
+	"AutoClose ifTrue: [^self delete].
 	self setLabel: (windowTitle := iconTitle := 'disconnected').
-	(ProtocolAdaptor new localEcho) asProtocolStack push: tty; install; run
+	(ProtocolAdaptor new localEcho) asProtocolStack push: tty; install; run"
 ]
 
 { #category : #events }

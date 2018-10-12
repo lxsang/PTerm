@@ -162,7 +162,9 @@ TerminalEmulatorXterm >> newStringArgument: arg [
 TerminalEmulatorXterm >> note: aSymbol with: anObject [
 
 	super note: aSymbol with: anObject.
-	aSymbol == #endpointClosed ifTrue: [^self restoreBuffer].
+	aSymbol == #endpointClosed ifTrue: [
+		up note: aSymbol with:anObject.
+		^self restoreBuffer].
 ]
 
 { #category : #'control sequences' }

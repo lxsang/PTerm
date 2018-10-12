@@ -18,7 +18,6 @@ PTerm >> announcer [
 
 { #category : #protocol }
 PTerm >> close [
-	Transcript show: 'close pterm'; cr.
 	self master ifNotNil: [
 		self nextPutCr: 'exit'	
 	]
@@ -93,7 +92,7 @@ PTerm >> run [
 { #category : #initialization }
 PTerm >> setWinsize: point [
 	|st|
-	Transcript show: 'resize window to ', point asString.
+	Transcript show: 'resize window to ', point asString; cr.
 	 st := self lib ttyWinSize: self master rows: point y  cols: point x.
 	st = 0 ifFalse: [ ^self error: 'Cannot set tty window size' ]
 ]
@@ -175,7 +174,10 @@ PTerm >> waitForOutput [
 	active := false.
 	self lib closept: self master.
 	self announcer unsubscribe: sub.
-	Transcript  show: 'Finish read'.
+	master := nil.
+	up inspect.
+	up note: #endpointClosed with: true.
+	Transcript  show: 'Terminal closed'.
 ]
 
 { #category : #'instance creation' }
