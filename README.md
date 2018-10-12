@@ -4,7 +4,7 @@ Using Unix terminal from Pharo.
 
 Require libc compliant with the host pharo VM (32 or 64 bits) to be installed.
 
-[PTerm](PTerm.gif)
+![PTerm](PTerm.gif)
 
 Install on pharo 7
 
