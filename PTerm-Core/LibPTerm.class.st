@@ -1,6 +1,6 @@
 Class {
 	#name : #LibPTerm,
-	#superclass : #Object,
+	#superclass : #FFILibrary,
 	#classInstVars : [
 		'instance'
 	],
@@ -33,6 +33,34 @@ LibPTerm class >> SIGKILL [
 	^ 9
 ]
 
+{ #category : #'as yet unclassified' }
+LibPTerm class >> compile [
+	|cmd arch st fp|
+	fp := self mksource.
+	arch := Smalltalk vm is64bit ifTrue: [ '-m64' ] ifFalse: [ '-m32' ].
+	cmd := 'gcc -c -fpic ', arch, ' libpterm.c'.
+	Transcript show: 'Building: ', cmd; cr.
+	st := LibC system: cmd.
+	st = 0 ifFalse: [ ^self error:'LibC Cannot create object file' ].
+	cmd := 'gcc -shared -o libpterm.flib libpterm.o'.
+	Transcript show: 'Building: ', cmd; cr.
+	st := LibC system: cmd. 
+	st = 0 ifFalse: [ ^self error:'LibC Cannot create shared file' ].
+	fp exists ifTrue:[ fp delete ].
+	'./libpterm.o' asFileReference delete
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm class >> mksource [
+	|file stream|
+	file := './libpterm.c' asFileReference.
+	file exists ifTrue:[ file delete ].
+	stream := file writeStream.
+	stream nextPutAll: self source.
+	stream close.
+	^file
+]
+
 { #category : #'instance creation' }
 LibPTerm class >> new [
 	self error: 'Please use #singleton'
@@ -47,6 +75,45 @@ LibPTerm class >> singleton [
 LibPTerm class >> sizeOfFileAction [
 	"we fix it to 80 for now"
 	^80
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm class >> source [
+	^ '
+#define _GNU_SOURCE 
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+pid_t pterm_spawn_tty(int master, char** args, char** envs)
+{
+    // get file name
+    char* fname = ptsname(master);
+    int fds = open(fname, O_RDWR);
+    pid_t pid = fork();
+    if(pid == 0)
+    {
+        // child
+        close(master);
+        close(0);
+        close(1);
+        close(2);
+        dup(fds);
+        dup(fds);
+        dup(fds);
+        close(fds);
+        setsid();
+        ioctl(0, TIOCSCTTY, 1);
+        execve(args[0], &args[0], envs);
+        // when we have problem
+        exit(1);
+    }
+    return pid;
+}
+'
 ]
 
 { #category : #'as yet unclassified' }
@@ -109,6 +176,11 @@ LibPTerm >> grantpt: fd [
 { #category : #accessing }
 LibPTerm >> kill: pid signal: sig [
 	^ self ffiCall: #(int kill(int pid, int sig)) module: LibC
+]
+
+{ #category : #'accessing platform' }
+LibPTerm >> macModuleName [ 
+	^ 'libpterm.flib'
 ]
 
 { #category : #accessing }
@@ -174,6 +246,11 @@ LibPTerm >> stringArrayOf: anArray [
 	^ xarray 
 ]
 
+{ #category : #'accessing platform' }
+LibPTerm >> unixModuleName [
+	^'libpterm.flib'
+]
+
 { #category : #'as yet unclassified' }
 LibPTerm >> unlockpt: fd [
 	^ self ffiCall: #(int unlockpt(int fd)) module: LibC
@@ -187,4 +264,9 @@ LibPTerm >> waitpid: pid status: buf noHang: v [
 { #category : #writing }
 LibPTerm >> write: fd buffer: buff size: size [
 	^self ffiCall: #(int write(int fd, char* buff, int size)) module: LibC 
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm >> xspawn: fd argv: argv envs:envs [
+	^ self ffiCall: #(int pterm_spawn_tty(int fd, void* argv, void* envs)) 
 ]

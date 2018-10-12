@@ -81,7 +81,7 @@ TerminalEmulator class >> openBash [
 	| win |
 
 	win := self open.
-	(PTerm new spawn: '/bin/bash' args: {'bash'} env: {'TERM=linux'}) asProtocolStack
+	(PTerm new xspawn: { '/bin/bash'.} env: {'TERM=linux'}) asProtocolStack
 		push: TerminalEmulatorXterm new;
 		push: win tty;
 		install;

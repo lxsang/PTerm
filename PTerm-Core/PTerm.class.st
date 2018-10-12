@@ -18,6 +18,7 @@ PTerm >> announcer [
 
 { #category : #protocol }
 PTerm >> close [
+	Transcript show: 'close pterm'; cr.
 	self master ifNotNil: [
 		self nextPutCr: 'exit'	
 	]
@@ -161,4 +162,23 @@ PTerm >> waitForOutput [
 	self lib closept: self master.
 	self announcer unsubscribe: sub.
 	Transcript  show: 'Finish read'.
+]
+
+{ #category : #'instance creation' }
+PTerm >> xspawn: argv [
+	^ self xspawn: argv env: nil 
+]
+
+{ #category : #'instance creation' }
+PTerm >> xspawn: argv env:envs [
+	| xarray  earray|
+	"allocate the file action structure (void* for now)"
+	xarray := self lib stringArrayOf: argv.
+	earray  := self lib stringArrayOf: envs.
+	master := self lib master.
+	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
+	pid := self lib xspawn: master argv: xarray getHandle  envs: earray getHandle.
+	"self lib kill: pid signal: self lib class SIGKILL."
+	"self lib waitpit: pid status: status noHang: 0."
+	Transcript show: 'Finish: ', pid asString; cr.
 ]
