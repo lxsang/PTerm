@@ -12,6 +12,8 @@ spec for: #common do: [
 	spec
 		package: 'PTerm-Core';
 		package: 'PTerm-Test';
-		group: 'default' with: #('PTerm-Core' 'PTerm-Test')
+		package: 'PTerm-Protocol';
+		package: 'PTerm-UI'
+		group: 'default' with: #('PTerm-Core' 'PTerm-Test' 'PTerm-Protocol' 'PTerm-UI')
 ]
 ]
