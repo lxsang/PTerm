@@ -13,7 +13,7 @@ spec for: #common do: [
 		package: 'PTerm-Core';
 		package: 'PTerm-Test';
 		package: 'PTerm-Protocol';
-		package: 'PTerm-UI'
+		package: 'PTerm-UI';
 		group: 'default' with: #('PTerm-Core' 'PTerm-Test' 'PTerm-Protocol' 'PTerm-UI')
 ]
 ]
