@@ -88,6 +88,7 @@ LibPTerm class >> source [
 #include <stdio.h>
 #include <termios.h>
 #include <sys/ioctl.h>
+#include <string.h>
 pid_t pterm_spawn_tty(int master, char** args, char** envs)
 {
     // get file name
@@ -112,6 +113,26 @@ pid_t pterm_spawn_tty(int master, char** args, char** envs)
         exit(1);
     }
     return pid;
+}
+int tty_set_winsize(int fdm, int rows, int cols)
+{ 
+	struct winsize win = {0, 0, 0, 0};
+	if (ioctl(fdm, TIOCGWINSZ, &win) != 0)
+	{
+		if (errno != EINVAL)
+		{
+			return -1;
+		}
+		memset(&win, 0, sizeof(win));
+	}
+	if (rows >= 0)
+		win.ws_row = rows;
+	if (cols >= 0)
+		win.ws_col = cols;
+
+	if (ioctl(fdm, TIOCSWINSZ, (char *)&win) != 0)
+		return -1;
+	return 0;
 }
 '
 ]
@@ -253,6 +274,11 @@ LibPTerm >> ttySpawn: fd argv: argv envs:envs [
 		self class compile.
 		^self xspawn: fd argv: argv  envs: envs
 	] 
+]
+
+{ #category : #'as yet unclassified' }
+LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
+	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols))
 ]
 
 { #category : #'accessing platform' }

@@ -84,6 +84,13 @@ PTerm >> run [
 
 ]
 
+{ #category : #initialization }
+PTerm >> setWinsize: point [
+	|st|
+	 st := self lib ttyWinSize: self master rows: point y  cols: point x.
+	st = 0 ifFalse: [ ^self error: 'Cannot set tty window size' ]
+]
+
 { #category : #'instance creation' }
 PTerm >> spawn [
 	|buff status argv xarray fname fileaction pid count data|
@@ -175,9 +182,11 @@ PTerm >> xspawn: argv env:envs [
 	"allocate the file action structure (void* for now)"
 	xarray := self lib stringArrayOf: argv.
 	earray  := self lib stringArrayOf: envs.
+	xarray ifNotNil: [ xarray := xarray getHandle ].
+	earray ifNotNil: [ earray := earray getHandle ].
 	master := self lib master.
 	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
-	pid := self lib ttySpawn: master argv: xarray getHandle  envs: earray getHandle.
+	pid := self lib ttySpawn: master argv: xarray   envs: earray .
 	"self lib kill: pid signal: self lib class SIGKILL."
 	"self lib waitpit: pid status: status noHang: 0."
 	Transcript show: 'Finish: ', pid asString; cr.

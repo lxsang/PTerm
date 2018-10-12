@@ -999,7 +999,7 @@ TerminalEmulatorMorph >> initializeTabs [
 TerminalEmulatorMorph >> initializeTeletype: size [
 	"Initialize the default behaviour: dumb terminal with local echo and default xterm VT options."
 
-	font := LogicalFont familyName: 'Source Code Pro' pointSize: 9.
+	font := LogicalFont familyName: 'Source Code Pro' pointSize: 8.
 	pitch := font widthOf: $W.
 	skip := font height.
 	cols := size x.
@@ -1044,12 +1044,13 @@ TerminalEmulatorMorph >> initializeTerminalModes [
 
 	autoWrap := true.
 	reverseWrap := autoLinefeed := autoCR := relativeOrigin := insertMode := false.
-	showCursor := true.
+	showCursor := false.
 	smoothScroll := false.
 	metaSendsEscape := true.
 	deleteIsDel := false.
 	altScreenSwitch := true.
 	reverseVideo := false.
+	"useScrollbar := true"
 ]
 
 { #category : #private }

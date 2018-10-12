@@ -4660,7 +4660,7 @@ TerminalEmulatorLineMorph >> contents: aLineState [
 	fgMap := Foreground shallowCopy.
 	bgMap := Background shallowCopy.
 	lineState := aLineState.
-	pitch := font widthOfString: 'W'.
+	pitch := font widthOf: $W.
 	color := Color white.
 	rv := false.
 	cursorColour := nil.
@@ -4669,21 +4669,20 @@ TerminalEmulatorLineMorph >> contents: aLineState [
 { #category : #accessing }
 TerminalEmulatorLineMorph >> cursorColour: cc [
 
-	cursorColour := cc.
+	cursorColour := cc .
 ]
 
 { #category : #private }
 TerminalEmulatorLineMorph >> defaultFont [
 
-	^ (LogicalFont familyName: 'Source Code Pro' pointSize: 8).
+	^ (LogicalFont familyName: 'Source Code Pro' pointSize: 9).
 ]
 
 { #category : #drawing }
 TerminalEmulatorLineMorph >> drawCursorOn: aCanvas [
-
 	| cc bg fg |
-	lineState cursorColumn > 0 ifTrue:
-		[cc := lineState cursorColumn min: lineState stringSize.
+	lineState cursorColumn > 0 ifFalse:[^self].
+		cc := lineState cursorColumn min: lineState stringSize.
 		 (lineState selectionSpansColumn:  cc)
 			ifTrue:
 				[fg := self backgroundColourAt: (lineState bgRuns at: cc).
@@ -4692,17 +4691,17 @@ TerminalEmulatorLineMorph >> drawCursorOn: aCanvas [
 				[bg := self backgroundColourAt: (lineState bgRuns at: cc).
 				 fg := cursorColour isNil ifTrue: [self foregroundColourAt: (lineState fgRuns at: cc)] ifFalse: [cursorColour]].
 		 owner hasFocus
-			ifTrue: [aCanvas
-				drawString: lineState string
-				from: cc to: cc
-				in: (bounds insetOriginBy: (pitch * (cc - 1) @ 0) cornerBy: 0@0)
-				font: font
-				color: bg
+			ifTrue: [
+				aCanvas
+				frameAndFillRectangle: (bounds origin + (pitch * (cc - 1) @ 0) extent: pitch @ font height)
+				fillColor: fg
+				borderWidth: 1
+				borderColor: fg
 				"background: fg"]
 			ifFalse: [aCanvas
 				frameRectangle: (bounds origin + (pitch * (cc - 1) @ 0) extent: pitch @ font height)
 				width: 1
-				color: fg]].
+				color: fg]
 ]
 
 { #category : #drawing }
@@ -4779,6 +4778,7 @@ TerminalEmulatorLineMorph >> initialize [
 	"Initialize the receiver with empty contents."
 
 	self contents: TerminalEmulatorTextState new.
+	"cursorColour := Color red."
 ]
 
 { #category : #accessing }

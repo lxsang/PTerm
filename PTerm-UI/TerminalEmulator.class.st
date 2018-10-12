@@ -58,7 +58,7 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 		icon: self icon;  
 		parent: #'MostUsedTools';
 		keyText: 'o, c';
-		help: 'Terminal emulator';
+		help: 'Terminal';
 		action: [ self openBash ].
 
 ]
@@ -78,79 +78,19 @@ TerminalEmulator class >> open [
 { #category : #'instance creation' }
 TerminalEmulator class >> openBash [
 	
-	| win |
-
+	| win term |
+	term := (PTerm new xspawn: { '/bin/bash'} env: nil).
+	term setWinsize: 60@24.
+	"term := (PTermEcho new)."
 	win := self open.
-	(PTerm new xspawn: { '/bin/bash'.} env: {'TERM=linux'}) asProtocolStack
+	term asProtocolStack
 		push: TerminalEmulatorXterm new;
 		push: win tty;
 		install;
 		run.
+		win inspect.
 	^ win	
 	
-]
-
-{ #category : #'instance creation' }
-TerminalEmulator class >> telnet: hostName [
-	"TeletypeWindow telnet: 'localhost'"
-
-	^self telnet: hostName port: 23
-]
-
-{ #category : #'menus-config' }
-TerminalEmulator >> buildConfigMenu [
-
-	| m |
-	m := MenuMorph new defaultTarget: self.
-
-	m
-		add: 'terminal type (', TerminalType terminalTypeName, ') '
-		subMenu: ((MenuMorph new defaultTarget: self)
-			add: 'vt102' selector: #menuBlock: argument: [TerminalType := TerminalEmulatorVT102];
-			balloonTextForLastItem: 'Emulate a VT102 terminal.';
-			add: 'xterm' selector: #menuBlock: argument: [TerminalType := TerminalEmulatorXterm];
-			balloonTextForLastItem: 'Emulate an xterm terminal.');
-		balloonTextForLastItem: 'Select the kind of terminal emulation to use.'.
-	"m
-		add: 'font (', TerminalEmulatorLineMorph defaultFont, ')' subMenu: self buildFontMenu;
-		balloonTextForLastItem: 'Set the default font for terminal windows.
-(Changes take effect in NEW windows, not this one.)'."
-
-	self menu: m add: 'enable auto-close' var: AutoClose eval: [AutoClose := AutoClose not]
-			help: 'Automatically close the window when the session terminates.'.
-	m addLine.
-
-	self menu: m add: 'save screen size' var: SaveTerminalSize
-			eval: [SaveTerminalSize := SaveTerminalSize not]
-			help: 'Save terminal screen size in shortcuts and restore it in new sessions.'.
-	self menu: m add: 'save main options' var: SaveTerminalMainOptions
-			eval: [SaveTerminalMainOptions := SaveTerminalMainOptions not]
-			help: 'Save terminal main options in shortcuts and restore them in new sessions.'.
-	self menu: m add: 'save vt options' var: SaveTerminalVTOptions
-			eval: [SaveTerminalVTOptions := SaveTerminalVTOptions not]
-			help: 'Save terminal VT options in shortcuts and restore them in new sessions.'.
-	self menu: m add: 'save telnet options' var: SaveTelnetOptions
-			eval: [SaveTelnetOptions := SaveTelnetOptions not]
-			help: 'Save telnet protocol options in shortcuts and restore them in new sessions.'.
-
-	m addLine; add: 'restore defaults' selector: #menuBlock: argument: [self menuRestoreDefaults];
-		balloonTextForLastItem: 'Reset ALL preferences and option values to their factory settings.'.
-
-	^m
-]
-
-{ #category : #'menus-config' }
-TerminalEmulator >> buildFontMenu [
-	| m |
-	m := MenuMorph new defaultTarget: TerminalEmulatorLineMorph.
-	StrikeFont monospacedFamilyNames do: [ :family |
-		m add: family
-		selector: #defaultFont:
-		argument: family;
-		 balloonTextForLastItem: 'Set the default font to ', family, '.
-(Changes take effect in NEW windows, not this one.)'
-	].
-	^ m
 ]
 
 { #category : #connections }
@@ -264,83 +204,6 @@ TerminalEmulator >> menuSaveShortcut [
 	((Shortcuts includesKey: name) and: [(self confirm: 'Replace existing shortcut called `', name, '''?') not])
 		ifTrue: [^self].
 	Shortcuts at: name put: shortcut.
-]
-
-{ #category : #connections }
-TerminalEmulator >> newConnection [
-
-	| remote host port |
-	remote := UIManager default
-		request: 'Remote host name and port?'
-		initialAnswer: 'localhost 23'.
-	(remote isNil or: [remote size == 0]) ifTrue: [^nil].
-	remote := remote substrings.
-	remote size < 1 ifTrue: [^nil].
-	host := remote first.
-	port := remote size > 1 ifTrue: [remote last asInteger].
-	port isNil ifTrue: [port := 23].
-	self newConnection: host port: port
-]
-
-{ #category : #connections }
-TerminalEmulator >> newConnection: args [
-
-	^self newConnection: args preferences: nil
-]
-
-{ #category : #connections }
-TerminalEmulator >> newShell [
-
-	| shell argv prog |
-	shell := UIManager default
-		request: 'Shell command?'
-		initialAnswer: '/bin/bash -i'.
-	argv := shell substrings.
-	argv isEmpty ifTrue: [^self].
-	prog := argv first.
-	argv := argv copyFrom: 2 to: argv size.
-	self setIconTitle: prog; setWindowTitle: prog.
-	(PseudoTTYEndpoint command: prog arguments: argv) asProtocolStack
-		push:		TerminalType new;
-		push:		tty;
-		install;
-		run
-
-]
-
-{ #category : #connections }
-TerminalEmulator >> newShell: args [
-
-	^self newShell: args preferences: nil
-]
-
-{ #category : #connections }
-TerminalEmulator >> newShell: args preferences: prefs [
-
-	| argv prog params |
-	prog := args first.
-	argv := args last.
-	params := prefs isNil ifTrue: [IdentityDictionary new] ifFalse: [prefs].
-	self setIconTitle: prog; setWindowTitle: prog.
-	(PseudoTTYEndpoint command: prog arguments: argv) asProtocolStack
-		push: TerminalType new;
-		push: tty;
-		note: #loadPreferences with: params;
-		install;
-		run
-
-]
-
-{ #category : #connections }
-TerminalEmulator >> newShortcut: shortcut [
-
-	| epClass epArgs |
-	self savePreferences: shortcut.
-	epClass := shortcut at: #endpointClass.
-	epArgs := shortcut at: #endpointArguments.
-	epClass == #PseudoTTYEndpoint ifTrue: [^self newShell: epArgs preferences: shortcut].
-	epClass == #NetworkEndpoint ifTrue: [^self newConnection: epArgs preferences: shortcut].
-	self error: 'I don''t know how to create an endpoint of type ', epClass
 ]
 
 { #category : #'initialize-release' }
