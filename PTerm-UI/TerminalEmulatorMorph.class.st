@@ -1023,7 +1023,7 @@ TerminalEmulatorMorph >> keyStroke: evt [
 
 	| char |
 	scrollOnInput ifTrue: [self pageEnd].
-	char := evt keyCharacter asciiValue.
+	char := evt keyValue "keyCharacter asciiValue".
 	evt controlKeyPressed
 		ifFalse:
 			[char == 1 ifTrue: [^self pageHome].
