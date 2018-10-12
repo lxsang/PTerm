@@ -1727,7 +1727,7 @@ TerminalEmulatorMorph >> textBounds: outer [
 
 	|  left right inner |
 	left := right := 0.
-	right := self scrollbarWidth.
+	right := self scrollbarWidth / 2.
 	inner := outer insetBy: inset.
 	^(inner left + left) @ (inner top) corner: (inner right - right) @ (inner bottom)
 ]
