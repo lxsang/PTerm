@@ -170,7 +170,7 @@ PTerm >> waitForOutput [
 			ws := self lib waitpid: self pid status: status noHang: 1
 		].
 	ws = 0
-	] whileTrue: [ count > 0 ifFalse:[ 300 milliSeconds wait ]].
+	] whileTrue: [ "count > 0 ifFalse:[ 300 milliSeconds wait ]"].
 	active := false.
 	self lib closept: self master.
 	self announcer unsubscribe: sub.
