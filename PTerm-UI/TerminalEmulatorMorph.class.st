@@ -327,81 +327,6 @@ TerminalEmulatorMorph >> bufferState: state [
 	self showCursor; linesChanged; changed
 ]
 
-{ #category : #menus }
-TerminalEmulatorMorph >> buildMainMenu [
-
-	| m |
-	(m := MenuMorph new) defaultTarget: self.
-	m	add: 'redraw window' target: owner selector: #changed;
-			balloonTextForLastItem: 'Redisplay the contents of the window.';
-		addLine.
-	self
-		menu: m add: 'meta sends escape' var: metaSendsEscape eval: [metaSendsEscape := metaSendsEscape not]
-			help: 'Send ESC before each keyboard character if the command key is pressed.';
-		menu: m add: 'delete is del' var: deleteIsDel eval: [deleteIsDel := deleteIsDel not]
-			help: 'Send DEL instead of backspace.'.
-	m addLine.
-	m
-		add: 'character classes ...' selector: #menuSetCharacterClasses;
-			balloonTextForLastItem: 'Modify the character classes used for double-click selection.'.
-	self
-		menu: m add: 'mouse controls clipboard' var: mouseControlsSelection eval: [mouseControlsSelection := mouseControlsSelection not]
-			help: 'If enabled then use xterm-style selection: selecting implies copy and the yellow button pastes.';
-		menu: m add: 'keyboard controls clipboard' var: keyboardControlsSelection eval: [keyboardControlsSelection := keyboardControlsSelection not]
-			help: 'If enabled then use Squeak-style selection: cmd-c copies selection to clipboard and cmd-v pastes.'.
-	m addLine.
-	m
-		add: 'saved line limit (', savedLineLimit printString, ') ...' selector: #menuSetSavedLineLimit;
-			balloonTextForLastItem: 'Set the maximum number of lines to save beyond the top of the window.'.
-	m
-		add: 'screen size (', cols printString, 'x', rows printString, ') ...' selector: #menuResizeScreen;
-			balloonTextForLastItem: 'Resize the screen to a given number of columns and rows.'.
-	^m
-]
-
-{ #category : #menus }
-TerminalEmulatorMorph >> buildVTMenu [
-
-	| m |
-	(m := MenuMorph new) defaultTarget: self.
-
-	self
-		menu: m add: 'enable scrollbar' var: useScrollbar eval: [self menuToggleScrollbar]
-			help: 'Show the scrollbar.';
-		menu: m add: 'enable jump scroll' var: smoothScroll not eval: [smoothScroll := smoothScroll not]
-			help: 'Allow several lines to be displayed at once when input is arriving quickly.';
-		menu: m add: 'enable reverse video' var: reverseVideo eval: [self setReverseVideo: reverseVideo not; flush]
-			help: 'Display the entire window in reverse video.';
-		menu: m add: 'enable auto wraparound' var: autoWrap eval: [autoWrap := autoWrap not]
-			help: 'Automatically wrap to the next line when the cursor reaches the last column.';
-		menu: m add: 'enable reverse wraparound' var: reverseWrap eval: [reverseWrap := reverseWrap not]
-			help: 'Automaticaly wrap to the previous line when the cursor moves left of the first column.';
-		menu: m add: 'enable auto linefeed' var: autoLinefeed eval: [autoLinefeed := autoLinefeed not]
-			help: 'Move to the next line automatically when carriage return is received.';
-
-		menu: m add: 'scroll to bottom on key press' var: scrollOnInput eval: [scrollOnInput := scrollOnInput not]
-			help: 'Automatically reposition the screen to the bottom of the scrolling region when keyboard input is received.';
-		menu: m add: 'scroll to bottom on tty output' var: scrollOnOutput eval: [scrollOnOutput := scrollOnOutput not]
-			help: 'Automatically reposition the screen to the bottom of the scrolling region when application output is received.';
-
-		menu: m add: 'allow 80/132 column switching' var: allow132 eval: [allow132 := allow132 not]
-			help: 'Allow the program to resize the window automatically using 80/132 column escape sequences.';
-
-		menu: m add: 'enable alternate screen switching' var: altScreenSwitch eval: [altScreenSwitch := altScreenSwitch not]
-			help: 'Allow switching to the alternate screen buffer.';
-		menu: m add: 'enable alternate screen colours' var: altScreenColours eval: [self setAltScreenColours: altScreenColours not]
-			help: self emacsColoursHelpString.
-	m addLine;
-		add: 'do soft reset' selector: #doSoftReset;
-			balloonTextForLastItem: 'Reset the scroll regions.  This can be convenient when some program has left the scroll regions set incorrectly (often a problem when using VMS or TOPS-20).';
-		add: 'do full reset' selector: #doFullReset;
-			balloonTextForLastItem: 'Clear the screen, reset tabs to every eight columns, and reset the terminal modes (such as wrap and smooth scroll) to their initial states just after terminal initialisation.';
-		add: 'reset and clear saved lines' selector: #doResetAndClear;
-			balloonTextForLastItem: 'Perform a full reset and then forget all lines scrolled off the top of the window.'.
-
-	^m
-]
-
 { #category : #accessing }
 TerminalEmulatorMorph >> characterClass [
 
@@ -714,15 +639,6 @@ TerminalEmulatorMorph >> drawOn: aCanvas [
 
 	super drawOn: aCanvas.
 	self updateScrollbar.
-]
-
-{ #category : #private }
-TerminalEmulatorMorph >> emacsColoursHelpString [
-	"This is so long that it distracts from the menu building in progress."
-
-	^'Use Emacs-style colours in the alternate screen buffer.
-
-(Xterm has two independent screen buffers.  Programs such as "Emacs" and "less" run in the alternate buffer and switch back to the primary buffer when they exit -- hence preserving the original contents of the screen.  If this option is enabled then the alternate buffer will use a different colour scheme [similar to the one used by Emacs under X11] much better adapted to recent Emacsen [version 21 and higher] that are capable of using font-lock mode and colour highlighting when running in a terminal window.)'
 ]
 
 { #category : #selection }
@@ -1175,41 +1091,6 @@ TerminalEmulatorMorph >> linesFrom: start to: stop do: aBlock [
 	lines from: first + start to: first + stop do: aBlock
 ]
 
-{ #category : #private }
-TerminalEmulatorMorph >> loadPreferences: dict [
-
-	| r c s |
-	(dict at: #saveTerminalMainOptions)
-		ifTrue:
-			[metaSendsEscape := dict at: #metaSendsEscape.
-			 deleteIsDel := dict at: #deleteIsDel.
-			 savedLineLimit := dict at: #savedLineLimit.
-			 characterClasses := (dict at: #characterClasses) copy.
-			 mouseControlsSelection := dict at: #mouseControlsSelection.
-			 keyboardControlsSelection := dict at: #keyboardControlsSelection.
-			 savedLineLimit := dict at: #savedLineLimit].
-	(dict at: #saveTerminalVTOptions)
-		ifTrue:
-			[s  := dict at: #useScrollbar.
-			 s == useScrollbar ifFalse: [self menuToggleScrollbar].
-			 smoothScroll := dict at: #smoothScroll.
-			 reverseVideo := dict at: #reverseVideo.
-			 autoWrap := dict at: #autoWrap.
-			 reverseWrap := dict at: #reverseWrap.
-			 autoLinefeed := dict at: #autoLinefeed.
-			 autoCR := dict at: #autoCR.
-			 scrollOnInput := dict at: #scrollOnInput.
-			 scrollOnOutput := dict at: #scrollOnOutput.
-			 allow132 := dict at: #allow132.
-			 altScreenSwitch := dict at: #altScreenSwitch.
-			 altScreenColours := dict at: #altScreenColours].
-	(dict at: #saveTerminalSize)
-		ifTrue:
-			[r := dict at: #rows.
-			 c := dict at: #cols.
-			 (r == rows and: [c == cols]) ifFalse: [self setWidth: c height: r]]
-]
-
 { #category : #events }
 TerminalEmulatorMorph >> lock [
 	"We're losing keyboard focus."
@@ -1220,97 +1101,10 @@ TerminalEmulatorMorph >> lock [
 ]
 
 { #category : #menus }
-TerminalEmulatorMorph >> menu: aMenu add: aString var: aBoolean eval: aBlock help: helpString [
-
-	aMenu
-		add: (aBoolean ifTrue: ['<yes>'] ifFalse: ['<no>']), aString
-		selector: #menuBlock:
-		argument: aBlock;
-		balloonTextForLastItem: helpString
-]
-
-{ #category : #menus }
 TerminalEmulatorMorph >> menuBlock: aBlock [
 
 	aBlock value.
 	self flush
-]
-
-{ #category : #menus }
-TerminalEmulatorMorph >> menuResizeScreen [
-
-	| n c r |
-	n := UIManager default
-		request: 'New screen size (columns x rows)?'
-		initialAnswer: cols printString, 'x', rows printString.
-	(n isNil or: [n isEmpty]) ifTrue: [^self].
-	n := n findTokens: 'x'.
-	n size == 2 ifFalse: [^Smalltalk beep].
-	(c := n first asInteger) isNil ifTrue: [^Smalltalk beep].
-	(r := n last asInteger) isNil ifTrue: [^Smalltalk beep].
-	self setWidth: c height: r
-]
-
-{ #category : #menus }
-TerminalEmulatorMorph >> menuSetCharacterClasses [
-
-	| n specs spec cclass range start stop |
-	n := UIManager default request: 'Character classes?  (Enter ? for help.)' initialAnswer: '?'.
-	(n isNil or: [n isEmpty]) ifTrue: [^self].
-	n = '?' ifTrue: [^self menuSetCharacterClassesHelp].
-	specs := n findTokens: ','.
-	specs do: [ :aSpec |
-		Transcript cr; show: aSpec.
-		start := stop := cclass := nil.
-		spec := aSpec findTokens: ':'.
-		Transcript cr; show: spec printString.
-		spec size == 2
-			ifTrue:
-				[cclass := spec last asInteger.
-				 range := spec first findTokens: '-'.
-				 Transcript cr; show: range printString.
-				 (cclass notNil and: [range size >= 1 and: [range size <= 2]])
-					ifTrue:
-						[start := range first asInteger.
-						 stop := (range size == 2 ifTrue: [range last] ifFalse: [range first]) asInteger]].
-		stop isNil ifTrue: [^Smalltalk beep; inform: 'Could not parse: ', spec printString].
-		cclass := Character value: cclass.
-		characterClasses from: start + 1 to: stop + 1 put: cclass.].
-
-	(self confirm: 'Would you like the current character classes  to be the default?')
-		ifTrue: [CharClass := characterClasses]
-
-]
-
-{ #category : #menus }
-TerminalEmulatorMorph >> menuSetCharacterClassesHelp [
-
-	Workspace new
-		contents: 'This preference is a series of comma-separated range:value pairs.  The range is either a single number or low-high in the range of 0 to 255, corresponding to the code for the character or characters to be set.  The value is the class in which to place the characters in the range.  The value is arbitrary, but the standard character classes use the following values: 1 for special graphics characters, 32 for whitespace, 48 for alphanumeric characters (letters and digits), and the code of the character itself for all others (corresponding to puncuation characters).
-
-For example,
-
-		33:48,37:48,45-47:48,64:48
-
-indicates that the exclamation mark, percent sign, dash, period, slash, and ampersand characters should be treated the same way as letters and digits.  This is useful for copying and pasting electronic mailing addresses and filenames.  Also,
-
-		33:48,37:48,45-47:48,58:48,64:48,126:48
-
-is similar but includes colon and tilde, making most URLs selectable with a double click.';
-		openLabel: 'Character Class Help'
-]
-
-{ #category : #menus }
-TerminalEmulatorMorph >> menuSetSavedLineLimit [
-
-	| n |
-	n := UIManager default
-		request: 'Saved line count?'
-		initialAnswer: savedLineLimit printString.
-	(n := n asInteger) isNil ifTrue: [^self].
-	savedLineLimit := n.
-	(self confirm: 'Would you like to make ', n printString, ' lines the default?')
-		ifTrue: [SavedLineLimit := n]
 ]
 
 { #category : #menus }
@@ -1355,7 +1149,7 @@ TerminalEmulatorMorph >> mouseDown: evt [
 				ifTrue: [self sendSelection]
 				ifFalse: [(systemWindow isKindOf: TerminalEmulator)
 					ifTrue: [systemWindow offerWindowMenu]
-					ifFalse: [self offerVTMenu]].
+					ifFalse: []].
 			 ^super mouseDown: evt].
 
 	"Red button is selection start (or selection extend when shifted in Squeak mode)."
@@ -1437,18 +1231,6 @@ TerminalEmulatorMorph >> note: aSymbol with: anObject [
 		ifTrue:
 			[^(systemWindow isKindOf: TerminalEmulator)
 				ifTrue: [systemWindow endpointClosed]].
-
-	aSymbol == #savePreferences ifTrue: [^self savePreferences: anObject].
-	aSymbol == #loadPreferences ifTrue: [^self loadPreferences: anObject].
-	aSymbol == #restoreDefaults ifTrue: 	[^self restoreDefaults]
-]
-
-{ #category : #menus }
-TerminalEmulatorMorph >> offerVTMenu [
-	"The user has pressed CTRL-Yellow (button 2).  Offer a menu similar to the Xterm `VT' menu."
-
-	(self buildVTMenu addStayUpIcons title: 'VT Options')
-		popUpEvent: self currentEvent in: self world
 ]
 
 { #category : #'initialize-release' }
@@ -1551,22 +1333,6 @@ TerminalEmulatorMorph >> resetVideo [
 		setEmphasis: 0
 ]
 
-{ #category : #private }
-TerminalEmulatorMorph >> restoreDefaults [
-
-	self initializeTerminalModes.
-	savedLineLimit := SavedLineLimit.
-	altScreenColours ifTrue: [self setAltScreenColours: false].
-	mouseControlsSelection := true.
-	keyboardControlsSelection := false.
-	scrollOnInput := false.
-	scrollOnOutput := true.
-	allow132 := true.
-	characterClasses := CharClass copy.
-	useScrollbar ifTrue: [self menuToggleScrollbar].
-	(cols == 80 and: [rows == 24]) ifFalse: [self setWidth: 80 height: 24]
-]
-
 { #category : #accessing }
 TerminalEmulatorMorph >> rows [
 
@@ -1588,32 +1354,6 @@ TerminalEmulatorMorph >> rv: aBoolean [
 	rv := aBoolean..
 	submorphs from: 1 to: rows do: [ :m | m rv: (rv xor: reverseVideo)].
 	self changed
-]
-
-{ #category : #private }
-TerminalEmulatorMorph >> savePreferences: dict [
-
-	dict
-		at: #rows put: rows;
-		at: #cols put: cols;
-		at: #savedLineLimit put: savedLineLimit;
-		at: #useScrollbar put: useScrollbar;
-		at: #autoWrap put: autoWrap;
-		at: #reverseWrap put: reverseWrap;
-		at: #autoLinefeed put: autoLinefeed;
-		at: #autoCR put: autoCR;
-		at: #smoothScroll put: smoothScroll;
-		at: #metaSendsEscape put: metaSendsEscape;
-		at: #deleteIsDel put: deleteIsDel;
-		at: #altScreenSwitch put: altScreenSwitch;
-		at: #altScreenColours put: altScreenColours;
-		at: #reverseVideo put: reverseVideo;
-		at: #mouseControlsSelection put: mouseControlsSelection;
-		at: #keyboardControlsSelection put: keyboardControlsSelection;
-		at: #scrollOnInput put: scrollOnInput;
-		at: #scrollOnOutput put: scrollOnOutput;
-		at: #allow132 put: allow132;
-		at: #characterClasses put: characterClasses copy
 ]
 
 { #category : #selection }
@@ -1674,7 +1414,7 @@ TerminalEmulatorMorph >> scrollbarMenuButtonPressed: evt [
 
 	(systemWindow isKindOf: TerminalEmulator)
 		ifTrue: [systemWindow offerWindowMenu]
-		ifFalse: [self offerVTMenu]
+		ifFalse: []
 ]
 
 { #category : #scrolling }

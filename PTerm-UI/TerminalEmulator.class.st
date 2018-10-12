@@ -53,7 +53,7 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 	"Add a custom menu item to the world menu"	
 	<worldMenu> 
 	
-	(aBuilder item: #'Terminal emulator')
+	(aBuilder item: #'Terminal')
 		order: 0.8; 
 		icon: self icon;  
 		parent: #'MostUsedTools';
@@ -79,7 +79,7 @@ TerminalEmulator class >> open [
 TerminalEmulator class >> openBash [
 	
 	| win term |
-	term := (PTerm new xspawn: { '/bin/bash'} env: nil).
+	term := (PTerm new xspawn: { '/bin/bash'} env: {'TERM=xterm'}).
 	"term := (PTermEcho new)."
 	win := self open.
 	term asProtocolStack
@@ -166,46 +166,9 @@ TerminalEmulator >> initialize [
 ]
 
 { #category : #private }
-TerminalEmulator >> menu: aMenu add: aString var: aBoolean eval: aBlock help: helpString [
-
-	aMenu
-		add: (aBoolean ifTrue: ['<yes>'] ifFalse: ['<no>']), aString
-		selector: #menuBlock:
-		argument: aBlock;
-		balloonTextForLastItem: helpString
-]
-
-{ #category : #private }
 TerminalEmulator >> menuBlock: aBlock [
 
 	aBlock value
-]
-
-{ #category : #'menus-config' }
-TerminalEmulator >> menuRestoreDefaults [
-
-	(self confirm: 'Really restore all defaults?
- Note: this will also clear all of your shortcuts! ') ifFalse: [^self].
-	TerminalEmulator initialize.
-	TerminalEmulatorMorph initialize.
-	TerminalEmulatorVT102 initialize.
-	TerminalEmulatorXterm initialize.
-	tty sessionNote: #restoreDefaults
-	
-]
-
-{ #category : #'menus-window' }
-TerminalEmulator >> menuSaveShortcut [
-
-	| shortcut name | 
-	shortcut := IdentityDictionary new.
-	shortcut at: #sessionType put: #unknown.
-	tty sessionNote: #savePreferences with: shortcut.
-	name := UIManager default request: 'Shortcut name?' initialAnswer: 'Untitled'.
-	(name isNil or: [name isEmpty]) ifTrue: [^self].
-	((Shortcuts includesKey: name) and: [(self confirm: 'Replace existing shortcut called `', name, '''?') not])
-		ifTrue: [^self].
-	Shortcuts at: name put: shortcut.
 ]
 
 { #category : #'initialize-release' }
@@ -264,16 +227,6 @@ TerminalEmulator >> qdoFastWindowReframe: ptName [
 TerminalEmulator >> removeShortcut: name [
 
 	Shortcuts removeKey: name ifAbsent: []
-]
-
-{ #category : #private }
-TerminalEmulator >> savePreferences: dict [
-
-	dict
-		at: #saveTerminalSize put: SaveTerminalSize;
-		at: #saveTerminalMainOptions put: SaveTerminalMainOptions;
-		at: #saveTerminalVTOptions put: SaveTerminalVTOptions;
-		at: #saveTelnetOptions put: SaveTelnetOptions
 ]
 
 { #category : #accessing }
