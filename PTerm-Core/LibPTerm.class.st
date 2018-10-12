@@ -42,7 +42,7 @@ LibPTerm class >> compile [
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd.
 	st = 0 ifFalse: [ ^self error:'LibC Cannot create object file' ].
-	cmd := 'gcc -shared -o libpterm.flib libpterm.o'.
+	cmd := 'gcc -shared ', arch, ' -o libpterm.flib libpterm.o'.
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd. 
 	st = 0 ifFalse: [ ^self error:'LibC Cannot create shared file' ].
