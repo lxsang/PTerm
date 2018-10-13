@@ -7,33 +7,50 @@ Class {
 	#category : #'PTerm-Core'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
 LibPTerm class >> F_GETFL [
 	^3
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
 LibPTerm class >> F_SETFL [
 	^4
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
 LibPTerm class >> O_NONBLOCK [
 	Smalltalk os isMacOS ifTrue: [ ^4 ].
 	^4000
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
 LibPTerm class >> O_RDWR [
 	^2
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
 LibPTerm class >> SIGKILL [
 	^ 9
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
+LibPTerm class >> ST_WINSIZE [
+	^8
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> TIOCGWINSZ [
+	Smalltalk os isMacOS ifTrue: [ ^1074295912 ].
+	^21523
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> TIOCSWINSZ [
+	Smalltalk os isMacOS ifTrue: [ ^2148037735 ].
+	^21524
+]
+
+{ #category : #compilation }
 LibPTerm class >> compile [
 	|cmd arch st fp|
 	fp := self mksource.
@@ -50,7 +67,7 @@ LibPTerm class >> compile [
 	'./libpterm.o' asFileReference delete
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #compilation }
 LibPTerm class >> mksource [
 	|file stream|
 	file := './libpterm.c' asFileReference.
@@ -71,13 +88,13 @@ LibPTerm class >> singleton [
 	^ self uniqueInstance 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'C-constants' }
 LibPTerm class >> sizeOfFileAction [
 	"we fix it to 80 for now"
 	^80
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #compilation }
 LibPTerm class >> source [
 	^ '
 #define _GNU_SOURCE 
@@ -194,6 +211,11 @@ LibPTerm >> grantpt: fd [
 	^ self ffiCall: #(int grantpt(int fd)) module: LibC
 ]
 
+{ #category : #'as yet unclassified' }
+LibPTerm >> ioct: fd cmd: cmd arg: arg [
+	^ self ffiCall: #(int ioctl(int fd, ulong cmd, void* arg)) module: LibC
+]
+
 { #category : #accessing }
 LibPTerm >> kill: pid signal: sig [
 	^ self ffiCall: #(int kill(int pid, int sig)) module: LibC
@@ -278,7 +300,7 @@ LibPTerm >> ttySpawn: fd argv: argv envs:envs [
 
 { #category : #'as yet unclassified' }
 LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
-	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols)) 
+	^ self ffiCall: #(int tty_set_winsize_(int fd, int rows, int cols)) 
 ]
 
 { #category : #'accessing platform' }

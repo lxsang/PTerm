@@ -94,7 +94,23 @@ PTerm >> run [
 
 { #category : #initialization }
 PTerm >> setWinsize: point [
-	[self lib ttyWinSize: self master rows: point y  cols: point x] on: Error do: [  ]
+	|buf arr st|
+	[self lib ttyWinSize: self master rows: point y  cols: point x] on: Error do: [
+		Transcript show: 'fallback to in image solution ', point asString; cr.
+		buf := FFIExternalArray externalNewType: 'uint8' size: self lib class ST_WINSIZE.
+		arr := point y asByteArrayOfSize: 2.
+		buf at: 1 put: (arr at:2).
+		buf at:2 put: (arr at: 1).
+		arr := point x asByteArrayOfSize: 2.
+		buf at: 3 put: (arr at: 2).
+		buf at: 4 put: (arr at:1).
+		buf at: 5 put: 0.
+		buf at: 6 put: 0.
+		buf at: 7 put: 0.
+		buf at: 8 put:0.
+		st := self lib ioct: self master cmd: self lib class TIOCSWINSZ   arg: buf getHandle.
+		st = 0 ifFalse:[^self error: 'Cannot set window size']
+	]
 ]
 
 { #category : #'instance creation' }
