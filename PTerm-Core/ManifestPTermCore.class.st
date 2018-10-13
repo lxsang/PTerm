@@ -14,5 +14,5 @@ ManifestPTermCore class >> ruleRBLiteralArrayContainsCommaRuleV1FalsePositive [
 
 { #category : #'code-critics' }
 ManifestPTermCore class >> ruleRBUncommonMessageSendRuleV1FalsePositive [
-	^ #(#(#(#RGMethodDefinition #(#LibPTerm #master #false)) #'2018-10-11T11:39:34.584794+02:00') )
+	^ #(#(#(#RGMethodDefinition #(#LibPTerm #master #false)) #'2018-10-11T11:39:34.584794+02:00') #(#(#RGPackage #(#'PTerm-Core')) #'2018-10-13T12:03:33.382875+02:00') )
 ]
