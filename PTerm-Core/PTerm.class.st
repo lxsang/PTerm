@@ -94,10 +94,7 @@ PTerm >> run [
 
 { #category : #initialization }
 PTerm >> setWinsize: point [
-	|st|
-	"Transcript show: 'resize window to ', point asString; cr."
-	st := self lib ttyWinSize: self master rows: point y  cols: point x.
-	st = 0 ifFalse: [ ^self error: 'Cannot set tty window size' ]
+	[self lib ttyWinSize: self master rows: point y  cols: point x] on: Error do: [  ]
 ]
 
 { #category : #'instance creation' }
@@ -132,28 +129,22 @@ PTerm >> spawn: cmd args: argv [
 
 { #category : #'instance creation' }
 PTerm >> spawn: cmd args: argv env:envs [
-	| status xarray fname fileaction earray|
+	| status  fname fileaction |
 	"allocate the file action structure (void* for now)"
 	status := FFIUInt32  newBuffer.
-	xarray := self lib stringArrayOf: argv.
-	earray  := self lib stringArrayOf: envs.
-	master := self lib master.
+	master ifNil: [ master := self lib master ].
 	"self lib setNonBlocking: master."
 	fname := self lib ptsname: self master.
 	fileaction  := self lib fileActionSettingFor:fname.
-	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	self lib posixSpawn: status 
 			process: cmd
 			fileAction: fileaction
 			fileAttr: nil
-			argv: xarray getHandle
-			env: earray getHandle.
+			argv: argv
+			env: envs.
 	pid := status integerAt: 1 size: 4 signed:true.
-	"self lib kill: pid signal: self lib class SIGKILL."
-	"self lib waitpit: pid status: status noHang: 0."
 	fileaction free.
-	active := true.
-	Transcript show: 'Finish'.
+	Transcript show: 'Created non interractive shell';cr.
 ]
 
 { #category : #'instance creation' }
@@ -196,6 +187,10 @@ PTerm >> xspawn: argv env:envs [
 	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
 	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
-	pid := self lib ttySpawn: master argv: xarray   envs: earray .
+	"try to use the external lib if not sucess, fallback to the posix_spawn"
+	[pid := self lib ttySpawn: master argv: xarray   envs: earray ] on: Error do:[
+		self spawn: (argv first) args: xarray   env: earray 
+	].
+	active:= true.
 	Transcript show: 'Command run on process: ', pid asString; cr.
 ]

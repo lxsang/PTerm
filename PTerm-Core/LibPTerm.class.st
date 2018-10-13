@@ -229,7 +229,7 @@ LibPTerm >> openpt: flag [
 
 { #category : #'as yet unclassified' }
 LibPTerm >> posixSpawn:pid  process: cmd fileAction: ptr fileAttr:fattr argv: args env: envs [
-	^ self ffiCall:#( int posix_spawnp(int* pid, char* cmd, void* ptr, void* fattr, void* args, void* envs ))  module: LibC 
+	^ self ffiCall:#( int posix_spawnp(int* pid, char* cmd, void* ptr, void* fattr, void* args, void* envs ))  module: LibC  
 ]
 
 { #category : #printing }
@@ -278,7 +278,7 @@ LibPTerm >> ttySpawn: fd argv: argv envs:envs [
 
 { #category : #'as yet unclassified' }
 LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
-	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols))
+	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols)) 
 ]
 
 { #category : #'accessing platform' }
