@@ -169,7 +169,7 @@ LibPTerm >> fileActionAddDup: pointer fd: fd newFd: fd2 [
 	^self ffiCall: #(int posix_spawn_file_actions_adddup2( void* pointer, int fd, int fd2)) module: LibC.
 ]
 
-{ #category : #printing }
+{ #category : #lib }
 LibPTerm >> fileActionAddOpen: pointer fd: fd fileName: name flag: flag mode: mode [ 
 	^self ffiCall: #(int posix_spawn_file_actions_addopen( void* pointer, int fd, char* name, int flag, int mode )) module: LibC.
 ]
@@ -254,7 +254,7 @@ LibPTerm >> posixSpawn:pid  process: cmd fileAction: ptr fileAttr:fattr argv: ar
 	^ self ffiCall:#( int posix_spawnp(int* pid, char* cmd, void* ptr, void* fattr, void* args, void* envs ))  module: LibC  
 ]
 
-{ #category : #printing }
+{ #category : #lib }
 LibPTerm >> print: text [
 	^ self ffiCall: #(void printf(char* text)) module: LibC
 ]
