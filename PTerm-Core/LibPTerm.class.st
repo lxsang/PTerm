@@ -154,7 +154,7 @@ int tty_set_winsize(int fdm, int rows, int cols)
 '
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> closept: fd [
 	^ self ffiCall: #(int close(int fd)) module: LibC
 ]
@@ -164,22 +164,22 @@ LibPTerm >> exec: command [
 	^ LibC uniqueInstance system: command
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> fileActionAddDup: pointer fd: fd newFd: fd2 [ 
 	^self ffiCall: #(int posix_spawn_file_actions_adddup2( void* pointer, int fd, int fd2)) module: LibC.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #printing }
 LibPTerm >> fileActionAddOpen: pointer fd: fd fileName: name flag: flag mode: mode [ 
 	^self ffiCall: #(int posix_spawn_file_actions_addopen( void* pointer, int fd, char* name, int flag, int mode )) module: LibC.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> fileActionInit: pointer [
 	^self ffiCall: #(int posix_spawn_file_actions_init( void* pointer )) module: LibC.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> fileActionSettingFor:name [
 	|st ptr|
 	ptr := ExternalAddress allocate: self class sizeOfFileAction.
@@ -196,7 +196,7 @@ LibPTerm >> fileActionSettingFor:name [
 	^ ptr
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> fnctl: fd action: action flag: flag [
  	^ self ffiCall: #(int fcntl(int fd, int action, int flag)) module: LibC 
 ]
@@ -206,12 +206,12 @@ LibPTerm >> getReadWriteBufferOf: size [
 	^(FFIExternalArray externalNewType: 'char' size: size) getHandle
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> grantpt: fd [
 	^ self ffiCall: #(int grantpt(int fd)) module: LibC
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> ioct: fd cmd: cmd arg: arg [
 	^ self ffiCall: #(int ioctl(int fd, ulong cmd, void* arg)) module: LibC
 ]
@@ -239,17 +239,17 @@ LibPTerm >> master [
 	
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> open: name mode: flag [
 	^ self ffiCall: #(int open(char* name, int flag)) module: LibC
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> openpt: flag [
 	^ self ffiCall: #(int posix_openpt(int flag)) module: LibC
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> posixSpawn:pid  process: cmd fileAction: ptr fileAttr:fattr argv: args env: envs [
 	^ self ffiCall:#( int posix_spawnp(int* pid, char* cmd, void* ptr, void* fattr, void* args, void* envs ))  module: LibC  
 ]
@@ -259,17 +259,17 @@ LibPTerm >> print: text [
 	^ self ffiCall: #(void printf(char* text)) module: LibC
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> ptsname: fd [
 	^ self ffiCall: #(char* ptsname(int fd)) module: LibC
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> read: fd buffer: buff size: size [
 	^self ffiCall: #(int read(int fd, char* buff, int size)) module: LibC 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #initialization }
 LibPTerm >> setNonBlocking: fd [
 	|flag st|
 	flag := self fnctl: fd action: self class F_GETFL flag:0.
@@ -279,7 +279,7 @@ LibPTerm >> setNonBlocking: fd [
 	^st
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> stringArrayOf: anArray [
 	|xarray|
 	anArray  ifNil: [ ^nil ].
@@ -289,7 +289,7 @@ LibPTerm >> stringArrayOf: anArray [
 	^ xarray 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> ttySpawn: fd argv: argv envs:envs [
 	[ ^ self xspawn: fd argv: argv  envs: envs ] on: Error do: [ 
 		"try tho compile it"
@@ -298,7 +298,7 @@ LibPTerm >> ttySpawn: fd argv: argv envs:envs [
 	] 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
 	^ self ffiCall: #(int tty_set_winsize_(int fd, int rows, int cols)) 
 ]
@@ -308,12 +308,12 @@ LibPTerm >> unixModuleName [
 	^'libpterm.flib'
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> unlockpt: fd [
 	^ self ffiCall: #(int unlockpt(int fd)) module: LibC
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> waitpid: pid status: buf noHang: v [
 	^ self ffiCall: #(int waitpid(int pid, int * buf, int v)) module: LibC
 ]
@@ -323,7 +323,7 @@ LibPTerm >> write: fd buffer: buff size: size [
 	^self ffiCall: #(int write(int fd, char* buff, int size)) module: LibC 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #lib }
 LibPTerm >> xspawn: fd argv: argv envs:envs [
 	^ self ffiCall: #(int pterm_spawn_tty(int fd, void* argv, void* envs)) 
 ]
