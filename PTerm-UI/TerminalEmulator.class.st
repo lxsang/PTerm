@@ -90,7 +90,7 @@ TerminalEmulator class >> open [
 TerminalEmulator class >> openBash [
 	
 	| win term |
-	term := (PTerm new xspawn: { '/bin/bash'. '-i'} env: self environ ).
+	term := (PTerm new xspawn: { '/bin/bash'} env: self environ ).
 	"term := (PTermEcho new)."
 	win := self open.
 	term asProtocolStack
