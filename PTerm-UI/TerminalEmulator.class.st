@@ -36,7 +36,7 @@ TerminalEmulator class >> environ [
 	Smalltalk os environment asDictionary keysAndValuesDo: [ :k :v|
 		collection add: k,'=',v
 	].
-	collection add: 'TERM=xterm'.
+	collection add: 'TERM=linux'.
 	^collection 
 ]
 
@@ -90,7 +90,7 @@ TerminalEmulator class >> open [
 TerminalEmulator class >> openBash [
 	
 	| win term |
-	term := (PTerm new xspawn: { '/bin/bash'} env: self environ ).
+	term := (PTerm new xspawn: { '/bin/bash'. '-i'} env: self environ ).
 	"term := (PTermEcho new)."
 	win := self open.
 	term asProtocolStack
