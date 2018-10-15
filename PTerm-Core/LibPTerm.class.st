@@ -300,7 +300,7 @@ LibPTerm >> ttySpawn: fd argv: argv envs:envs [
 
 { #category : #lib }
 LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
-	^ self ffiCall: #(int tty_set_winsize_(int fd, int rows, int cols)) 
+	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols)) 
 ]
 
 { #category : #'accessing platform' }
