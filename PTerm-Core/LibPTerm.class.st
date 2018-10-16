@@ -225,7 +225,7 @@ LibPTerm >> kill: pid signal: sig [
 
 { #category : #'accessing platform' }
 LibPTerm >> macModuleName [ 
-	^ 'libpterm.flib'
+	^ self moduleName
 ]
 
 { #category : #accessing }
@@ -239,6 +239,11 @@ LibPTerm >> master [
 	st ~= 0 ifTrue: [ self closept: fd. ^ self error: 'Error on unlockpt()' ].
 	^fd
 	
+]
+
+{ #category : #'accessing platform' }
+LibPTerm >> moduleName [
+	^ (('./' asFileReference absolutePath) / 'libpterm.flib') asFileReference pathString
 ]
 
 { #category : #lib }
@@ -307,7 +312,7 @@ LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
 
 { #category : #'accessing platform' }
 LibPTerm >> unixModuleName [
-	^'libpterm.flib'
+	^ self moduleName
 ]
 
 { #category : #lib }
