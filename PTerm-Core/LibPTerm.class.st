@@ -52,25 +52,26 @@ LibPTerm class >> TIOCSWINSZ [
 
 { #category : #compilation }
 LibPTerm class >> compile [
-	|cmd arch st fp|
+	|cmd arch st fp dir ofile|
 	fp := self mksource.
+	ofile := fp parent / 'libpterm.o'.
 	arch := Smalltalk vm wordSize = 8 ifTrue: [ '-m64' ] ifFalse: [ '-m32' ].
-	cmd := 'gcc -c -fpic ', arch, ' libpterm.c'.
+	cmd := 'gcc -c -fpic ', arch, ' "', fp pathString, '"'.
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd.
 	st = 0 ifFalse: [ ^self error:'LibC Cannot create object file' ].
-	cmd := 'gcc -shared ', arch, ' -o libpterm.flib libpterm.o'.
+	cmd := 'gcc -shared ', arch, ' -o libpterm.flib "', ofile pathString, '"'.
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd. 
 	st = 0 ifFalse: [ ^self error:'LibC Cannot create shared file' ].
 	fp exists ifTrue:[ fp delete ].
-	'./libpterm.o' asFileReference delete
+	ofile asFileReference delete
 ]
 
 { #category : #compilation }
 LibPTerm class >> mksource [
 	|file stream|
-	file := './libpterm.c' asFileReference.
+	file := ('./' asFileReference absolutePath / 'libpterm.c') asFileReference.
 	file exists ifTrue:[ file delete ].
 	stream := file writeStream.
 	stream nextPutAll: self source.
