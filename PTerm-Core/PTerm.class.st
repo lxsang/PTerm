@@ -201,7 +201,7 @@ PTerm >> xspawn: argv env:envs [
 	xarray ifNotNil: [ xarray := xarray getHandle ].
 	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
-	[ self waitForOutput  ] forkAt: Processor userBackgroundPriority.
+	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	"try to use the external lib if not sucess, fallback to the posix_spawn"
 	[pid := self lib ttySpawn: master argv: xarray   envs: earray ] on: Error do:[
 		self spawn: (argv first) args: xarray   env: earray 
