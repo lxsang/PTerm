@@ -52,15 +52,16 @@ LibPTerm class >> TIOCSWINSZ [
 
 { #category : #compilation }
 LibPTerm class >> compile [
-	|cmd arch st fp dir ofile|
+	|cmd arch st fp libfile ofile|
 	fp := self mksource.
 	ofile := fp parent / 'libpterm.o'.
+	libfile := fp parent / 'libpterm.flib'.
 	arch := Smalltalk vm wordSize = 8 ifTrue: [ '-m64' ] ifFalse: [ '-m32' ].
-	cmd := 'gcc -c -fpic ', arch, ' "', fp pathString, '"'.
+	cmd := 'gcc -c -fpic ', arch, ' "', fp pathString, '" -o "', ofile pathString, '"'.
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd.
 	st = 0 ifFalse: [ ^self error:'LibC Cannot create object file' ].
-	cmd := 'gcc -shared ', arch, ' -o libpterm.flib "', ofile pathString, '"'.
+	cmd := 'gcc -shared ', arch, ' -o "',libfile pathString,'" "', ofile pathString, '"'.
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd. 
 	st = 0 ifFalse: [ ^self error:'LibC Cannot create shared file' ].
