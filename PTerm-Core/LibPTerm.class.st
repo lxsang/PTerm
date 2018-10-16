@@ -54,7 +54,7 @@ LibPTerm class >> TIOCSWINSZ [
 LibPTerm class >> compile [
 	|cmd arch st fp|
 	fp := self mksource.
-	arch := Smalltalk vm is64bit ifTrue: [ '-m64' ] ifFalse: [ '-m32' ].
+	arch := Smalltalk vm wordSize = 8 ifTrue: [ '-m64' ] ifFalse: [ '-m32' ].
 	cmd := 'gcc -c -fpic ', arch, ' libpterm.c'.
 	Transcript show: 'Building: ', cmd; cr.
 	st := LibC system: cmd.
