@@ -16,3 +16,8 @@ Metacello new
 	baseline:'PTerm';
 	load
 ```
+
+## Usage
+```Smalltalk
+TerminalEmulator openShell: '/bin/bash'
+```
