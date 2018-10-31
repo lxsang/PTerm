@@ -66,35 +66,6 @@ TerminalEmulatorLineMorph class >> example [
 	^m
 ]
 
-{ #category : #examples }
-TerminalEmulatorLineMorph class >> example2 [
-	"One way (the wrong way) to implement blinking cursors."
-	"TerminalEmulatorLineMorph example2"
-
-	| m |
-	(m := TerminalEmulatorLineMorph new) lineState string: ('Hello, world.' padded: #right to: 80 with: $ ).
-	m openInWorld; fitContents.
-	[10 timesRepeat:
-		[m lineState backgroundAt: 14 put: 0.  m flush.
-		 (Delay forMilliseconds: 600) wait.
-		 m lineState backgroundAt: 14 put: 7; changed.  m flush.
-		 (Delay forMilliseconds: 300) wait].
-	 m abandon] forkAt: Processor highIOPriority.
-	^m
-]
-
-{ #category : #examples }
-TerminalEmulatorLineMorph class >> example3 [
-	"SimpleTextMorph example3"
-
-	| m |
-	(m := TerminalEmulatorLineMorph new) lineState string: ('Hello, world.' padded: #right to: 80 with: $ ).
-	m openInWorld; fitContents.
-	m cursorColour: Preferences textHighlightColor.
-	m lineState cursorCol: 14.
-	^m
-]
-
 { #category : #private }
 TerminalEmulatorLineMorph class >> fixedFontDefinition [
 	"This is -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1 (aka 'fixed')"
@@ -4625,7 +4596,7 @@ TerminalEmulatorLineMorph class >> initialize [
 	"Alternate colour scheme for Emacs: reversed white/black on dark slate grey"
 	(Foreground2 := Foreground shallowCopy) at: 1 put: (Color white); at: 8 put: (Color black).
 	(Background2 := Background shallowCopy) at: 1 put: (Color white); at: 8 put: (Color fromString: '#314D52').
-	false ifTrue: [
+	true ifTrue: [
 	2 to: 7 do: [:i |
 		Foreground2 at: i put: ((Foreground2 at: i) adjustSaturation: -0.35 brightness: 0.5).
 		Background2 at: i put: ((Background2 at: i) adjustSaturation: -0.35 brightness: 0.5)].

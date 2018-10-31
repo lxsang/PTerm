@@ -821,6 +821,7 @@ TerminalEmulatorMorph >> initTextBounds: textBounds width: nCols height: nRows [
 				ifFalse:
 					["add a new empty line at the bottom of the screen"
 					 morph := TerminalEmulatorLineMorph contents: (lines addLast: (TerminalEmulatorTextState new: cols)).
+					 "morph emacsColours."
 					 morphs addLast: morph].
 			 rows := rows + 1].
 	[rows > r]
@@ -908,7 +909,7 @@ TerminalEmulatorMorph >> initializeTeletype: size [
 	bg := 7.
 	em := 0.
 	rv := false.
-	ec := false.
+	ec := true.
 	session := nil.
 	self initializeTabs.
 	self initializeTerminalModes.	"Default low protocol: local echo"
@@ -918,7 +919,7 @@ TerminalEmulatorMorph >> initializeTeletype: size [
 	autoFlush := 0.
 	steps := 0.
 	altScreenActive := false.
-	altScreenColours := false.
+	altScreenColours := true.
 	hasFocus := true.
 	selectionStart := selectionEnd := nil.
 	selectionActive := false.
@@ -1174,7 +1175,7 @@ TerminalEmulatorMorph >> newLine [
 
 	| line |
 	line := (TerminalEmulatorTextState string: (String new: cols withAll: $ )) .
-	ec & altScreenColours ifTrue: [line emacsColours].
+	"ec & altScreenColours ifTrue: [line emacsColours]."
 	^line
 ]
 
