@@ -36,6 +36,7 @@ TerminalEmulator class >> environ [
 	Smalltalk os environment asDictionary keysAndValuesDo: [ :k :v|
 		collection add: k,'=',v
 	].
+	collection add: 'LANG=en_US.UTF-8'.
 	collection add: 'TERM=linux'.
 	^collection 
 ]
