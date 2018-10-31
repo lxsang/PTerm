@@ -10,8 +10,8 @@ Require libc compliant with the host pharo VM (32 or 64 bits) to be installed.
 
 
 ## Update:
-
-PTerm now uses dark mode
+* Add unicode support
+* PTerm now uses dark mode
 
 ![](https://github.com/lxsang/online_stuffs/raw/master/pterm-dark.png)
 
