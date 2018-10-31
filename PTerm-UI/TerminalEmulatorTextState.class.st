@@ -130,8 +130,8 @@ TerminalEmulatorTextState >> changed: aBoolean [
 
 { #category : #selection }
 TerminalEmulatorTextState >> clearSelection [
-
 	selection isNil ifTrue: [^self].
+	selection last > emRuns size ifTrue:[^self].
 	selection first to: selection last do: [:i | emRuns at: i put: ((emRuns at: i) bitXor: 64)].
 	selection := nil.
 	changed := true
@@ -284,7 +284,7 @@ TerminalEmulatorTextState >> lastColumn: col [
 
 { #category : #selection }
 TerminalEmulatorTextState >> selectFrom: left to: right [
-
+	right > emRuns size ifTrue:[^self]. 
 	selection isNil ifFalse: [self clearSelection].
 	selection := Array with: left with: right.
 	left to: right do: [:i | emRuns at: i put: ((emRuns at: i) bitXor: 64)].

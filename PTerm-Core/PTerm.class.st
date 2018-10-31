@@ -88,7 +88,9 @@ PTerm >> pid [
 
 { #category : #protocol }
 PTerm >> run [
-	sub := self announcer when: PTermDataEvent  do: [ :e|up upcallAll: e data].
+	sub := self announcer when: PTermDataEvent  do: [ :e|
+		e data do:[:c|
+			up upcall: c codePoint ]].
 
 ]
 
@@ -164,16 +166,22 @@ PTerm >> spawn: cmd args: argv env:envs [
 
 { #category : #'instance creation' }
 PTerm >> waitForOutput [
-	|data buff count ws status|
+	|data buff count ws status stream|
 	ws := 0.
 	self master ifNil: [ ^self ].
 	status := FFIUInt32  newBuffer.
+	stream := WriteStream on: ByteArray new.
 	buff := self lib getReadWriteBufferOf: 2048.
 	[ 
 		count := self lib read: self master buffer: buff  size: 2048.
 		count > 0 ifTrue:[
-			data :=  String newFrom: (FFIExternalArray fromHandle: buff type: 'char' size: count).
-			self announcer announce: (PTermDataEvent data: data asByteArray ).
+			data :=  (FFIExternalArray fromHandle: buff type: 'uint8' size: count) asByteArray.
+			stream nextPutAll: data.
+			[
+				data := stream contents decodeWith: #utf8.
+				self announcer announce: (PTermDataEvent data: data ).
+				stream reset.
+			] on:Error do:[].
 		].
 		self pid ifNotNil: [ 
 			ws := self lib waitpid: self pid status: status noHang: 1
