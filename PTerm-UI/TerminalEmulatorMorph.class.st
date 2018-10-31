@@ -77,27 +77,32 @@ Class {
 		'SavedLineLimit',
 		'TextCursor'
 	],
+	#classInstVars : [
+		'loaded'
+	],
 	#category : #'PTerm-UI'
 }
 
 { #category : #'as yet unclassified' }
 TerminalEmulatorMorph class >> checkFonts [
-	|path refresh|
+	|path refreshed|
 	path := self fontsDir.
-	refresh := false.
+	loaded ifNil: [ loaded := false ].
+	refreshed := true.
 	self fontsURI do:[:a|
 		(path / (a key)) exists ifFalse:[
-			refresh := true.
+			refreshed := false.
 			"Download the font"
 			ZnClient new
 				url: a value;
 				downloadTo: path.
 		]
 	] displayingProgress: [ 'Checking font' ].
-	refresh ifFalse:[^self].
+	(refreshed & loaded) ifTrue:[^self].
 	FreeTypeFontProvider current prepareForUpdating.
 	FreeTypeFontProvider current updateAvailableFontFamilies.
-	FreeTypeFontProvider current updateFromSystem 
+	FreeTypeFontProvider current updateFromSystem.
+	loaded := true.
 ]
 
 { #category : #'as yet unclassified' }
@@ -150,6 +155,7 @@ TerminalEmulatorMorph class >> initialize [
 	"Set the default selection handling behaviour."
 	MouseControlsSelection := true.
 	KeyboardControlsSelection := false.
+	loaded := false.
 	"Notes:
 	If MouseControlsSelection then selected text is copied to the clipboard when selection tracking finishes and the yellow button pastes from the clipboard into the terminal window.  Note that this moves the VT Options menu off the yellowButton and onto control-yellowButton (which is usually bound to the morph menu by things beyond our control; i.e., the VT menu becomes unavailable from within the TtyMorph itself.).
 	If KeyboardControlsSelection then cmd-c copies the last mouse selection to the clipboard and cmd-v pastes the clipboard text into the terminal.  Note that this means M-C and M-V will no longer be available to programs such as Emacs.
