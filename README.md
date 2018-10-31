@@ -8,6 +8,13 @@ Require libc compliant with the host pharo VM (32 or 64 bits) to be installed.
 
 ![PTerm](https://github.com/lxsang/PTerm/raw/master/Pterm.gif)
 
+
+## Update:
+
+PTerm now uses dark mode
+
+![](https://github.com/lxsang/online_stuffs/raw/master/pterm-dark.png)
+
 Install on pharo 7
 
 ```smalltalk
