@@ -15,6 +15,8 @@ PTerm now uses dark mode
 
 ![](https://github.com/lxsang/online_stuffs/raw/master/pterm-dark.png)
 
+## Install
+
 Install on pharo 7
 
 ```smalltalk
