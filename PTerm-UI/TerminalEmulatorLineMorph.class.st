@@ -4645,7 +4645,7 @@ TerminalEmulatorLineMorph >> cursorColour: cc [
 
 { #category : #private }
 TerminalEmulatorLineMorph >> defaultFont [
-	^ LogicalFont familyName: 'DejaVu Sans Mono' fallbackFamilyNames: 'Source Code Pro' pointSize: 9
+	^ LogicalFont familyName: 'DejaVu Sans Mono'  pointSize: 9
 ]
 
 { #category : #drawing }

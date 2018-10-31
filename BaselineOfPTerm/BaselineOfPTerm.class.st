@@ -9,6 +9,7 @@ BaselineOfPTerm >> baseline: spec [
 	<baseline>
 spec for: #common do: [ 
 	"spec preLoadDoIt: #preload."
+	spec postLoadDoIt: #checkFonts.
 	spec
 		package: 'PTerm-Core' with:  [ spec requires: #('PTerm-Protocol') ];
 		package: 'PTerm-Test';
@@ -16,4 +17,9 @@ spec for: #common do: [
 		package: 'PTerm-UI';
 		group: 'default' with: #('PTerm-Core' 'PTerm-Test'  'PTerm-UI')
 ]
+]
+
+{ #category : #baselines }
+BaselineOfPTerm >> checkFonts [
+	TerminalEmulatorMorph checkFonts 
 ]

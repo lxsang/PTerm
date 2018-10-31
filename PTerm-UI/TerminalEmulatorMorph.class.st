@@ -81,6 +81,26 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+TerminalEmulatorMorph class >> checkFonts [
+	|path refresh|
+	path := self fontsDir.
+	refresh := false.
+	self fontsURI do:[:a|
+		(path / (a key)) exists ifFalse:[
+			refresh := true.
+			"Download the font"
+			ZnClient new
+				url: a value;
+				downloadTo: path.
+		]
+	] displayingProgress: [ 'Checking font' ].
+	refresh ifFalse:[^self].
+	FreeTypeFontProvider current prepareForUpdating.
+	FreeTypeFontProvider current updateAvailableFontFamilies.
+	FreeTypeFontProvider current updateFromSystem 
+]
+
+{ #category : #'as yet unclassified' }
 TerminalEmulatorMorph class >> example [
 	"TerminalEmulatorMorph example"
 
@@ -100,6 +120,24 @@ TerminalEmulatorMorph class >> example2 [
 	top := ScrollPane new scroller: (tty := TerminalEmulatorMorph new).
 	ProtocolAdaptor new localEcho asProtocolStack push: tty; install; run.
 	top openInHand
+]
+
+{ #category : #'as yet unclassified' }
+TerminalEmulatorMorph class >> fontsDir [
+	|path|
+	path := Smalltalk vmDirectory asFileReference  / 'Fonts'.
+	path exists ifFalse:[ path createDirectory  ].
+	^path
+]
+
+{ #category : #'as yet unclassified' }
+TerminalEmulatorMorph class >> fontsURI [
+^{
+	'DejaVuSansMono-Bold.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Bold.ttf'.
+	'DejaVuSansMono-BoldOblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-BoldOblique.ttf'.
+	'DejaVuSansMono-Oblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Oblique.ttf'.
+	'DejaVuSansMono.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono.ttf'
+}
 ]
 
 { #category : #'as yet unclassified' }
@@ -851,7 +889,6 @@ TerminalEmulatorMorph >> initialExtent [
 
 { #category : #'initialize-release' }
 TerminalEmulatorMorph >> initialize [
-
 	^self initialize: 80@24
 ]
 
@@ -859,6 +896,7 @@ TerminalEmulatorMorph >> initialize [
 TerminalEmulatorMorph >> initialize: size [
 
 	super initialize.
+	self class checkFonts.
 	self borderWidth: 2.
 	color := Color white.
 	inset := 2.
@@ -894,7 +932,7 @@ TerminalEmulatorMorph >> initializeTabs [
 TerminalEmulatorMorph >> initializeTeletype: size [
 	"Initialize the default behaviour: dumb terminal with local echo and default xterm VT options."
 
-	font := LogicalFont familyName: 'DejaVu Sans Mono' fallbackFamilyNames: 'Source Code Pro' pointSize: 9.
+	font := LogicalFont familyName:'DejaVu Sans Mono' pointSize: 9.
 	pitch := font widthOf: $W.
 	skip := font height.
 	cols := size x.
