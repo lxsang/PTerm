@@ -4645,7 +4645,7 @@ TerminalEmulatorLineMorph >> cursorColour: cc [
 
 { #category : #private }
 TerminalEmulatorLineMorph >> defaultFont [
-	^ LogicalFont familyName: 'Unifont'  pointSize: 10
+	^ LogicalFont familyName: 'Unifont'  pointSize: 11
 ]
 
 { #category : #drawing }
