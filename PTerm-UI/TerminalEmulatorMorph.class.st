@@ -138,10 +138,12 @@ TerminalEmulatorMorph class >> fontsDir [
 { #category : #'as yet unclassified' }
 TerminalEmulatorMorph class >> fontsURI [
 ^{
-	'DejaVuSansMono-Bold.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Bold.ttf'.
+	"'DejaVuSansMono-Bold.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Bold.ttf'.
 	'DejaVuSansMono-BoldOblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-BoldOblique.ttf'.
 	'DejaVuSansMono-Oblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Oblique.ttf'.
-	'DejaVuSansMono.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono.ttf'
+	'DejaVuSansMono.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono.ttf'"
+	"We use unifont for better unicode support"
+	'unifont-11.0.02.ttf' -> 'http://unifoundry.com/pub/unifont/unifont-11.0.02/font-builds/unifont-11.0.02.ttf'
 }
 ]
 
@@ -938,7 +940,7 @@ TerminalEmulatorMorph >> initializeTabs [
 TerminalEmulatorMorph >> initializeTeletype: size [
 	"Initialize the default behaviour: dumb terminal with local echo and default xterm VT options."
 
-	font := LogicalFont familyName:'DejaVu Sans Mono' pointSize: 9.
+	font := LogicalFont familyName:'Unifont' pointSize: 10.
 	pitch := font widthOf: $W.
 	skip := font height.
 	cols := size x.
