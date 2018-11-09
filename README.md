@@ -25,9 +25,9 @@ TerminalEmulator openShell: '/bin/bash'
 ```
 
 ## Fonts
-By default, PTerm automatically downloads and uses 'DejaVu Sans Mono' as default font, but you can alway change the default font by accessing to the terminal window menu as bellow:
+By default, PTerm automatically downloads and uses 'DejaVu Sans Mono' as the default font, but you can always change the default font by accessing to the terminal window menu as below:
 
 ![](https://github.com/lxsang/online_stuffs/raw/master/font_selector.png)
 
-Normally, the default font (DejaVu Sans Mono) supports most commonly used unicode character.
-But for those who want heavily unicode support (chinese, Thai, japanese, etc.), PTerm has a second option in the window menu, that allows to automatically download and use Unifont (12 MB) as default font. This font offers 65536 unicode codepoints hence supports almost every languages, it dont look really nice though.
+Normally, the default font (DejaVu Sans Mono) supports most commonly used Unicode character.
+But for those who want heavily Unicode support (Chinese, Thai, Japanese, etc.), PTerm has a second option in the window menu, that allows to automatically download and use Unifont (12 MB) as the default font. This font offers 65536 Unicode codepoints hence supports almost every language, it doesn't look really nice though.
