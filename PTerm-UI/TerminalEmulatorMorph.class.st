@@ -1583,11 +1583,13 @@ TerminalEmulatorMorph >> setTab [
 
 { #category : #'initialize-release' }
 TerminalEmulatorMorph >> setUpFont [
+	Transcript show: 'modify'; cr.
 	font := TerminalEmulator font.
 	pitch := font widthOf: $W.
 	submorphs do:[:m|
 		m class = TerminalEmulatorLineMorph ifTrue:[m setUpFont]].
-	submorphs isEmpty ifTrue:[^self].
+	submorphs isEmpty ifTrue:[submorphs inspect. ^self].
+	Transcript show: 'change morph'; cr.
 	self extent: self extent.
 	self changed
 ]

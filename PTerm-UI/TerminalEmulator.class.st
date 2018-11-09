@@ -145,9 +145,9 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 
 { #category : #'instance creation' }
 TerminalEmulator class >> new [
-	self announcer when: TerminalEmulatorConfigChange do: [
+	self announcer when: TerminalEmulatorConfigChange do: [:e|
 		self allInstancesDo: [ :i |
-			i class = LogicalFont ifTrue:[i updateFont]
+			e data class = LogicalFont ifTrue:[i updateFont]
 			ifFalse:[i updateTheme]
 		]
 	].
@@ -207,10 +207,10 @@ TerminalEmulator class >> selecFont [
 	fontSelector := FreeTypeFontSelectorDialogWindow new.
 	UITheme builder openModal: fontSelector.
 	fontSelector cancelled ifFalse:[
-		font := fontSelector selectedFont
+		font := fontSelector selectedFont.
+		self announcer announce: (TerminalEmulatorConfigChange data: font).
 	].
 	"trigger font change"
-	self announcer announce: (TerminalEmulatorConfigChange data: font).
 	^ font familyName
 	
 ]
