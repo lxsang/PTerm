@@ -4627,11 +4627,10 @@ TerminalEmulatorLineMorph >> contents: aLineState [
 	"Initialize the receiver with the given contents."
 
 	super initialize.
-	font := self defaultFont.
 	fgMap := Foreground shallowCopy.
 	bgMap := Background shallowCopy.
 	lineState := aLineState.
-	pitch := font widthOf: $W.
+	self setUpFont.
 	color := Color white.
 	rv := false.
 	cursorColour := nil.
@@ -4645,7 +4644,7 @@ TerminalEmulatorLineMorph >> cursorColour: cc [
 
 { #category : #private }
 TerminalEmulatorLineMorph >> defaultFont [
-	^ LogicalFont familyName: 'Unifont'  pointSize: 11
+	^ TerminalEmulator font
 ]
 
 { #category : #drawing }
@@ -4754,6 +4753,7 @@ TerminalEmulatorLineMorph >> initialize [
 	"Initialize the receiver with empty contents."
 
 	self contents: TerminalEmulatorTextState new.
+	self announcer when: TerminalEmulatorFontChange  do: [ :e| self setUpFont. Transcript show: 'font changed']. 
 	"self on: Character null ctrl  do: [ :e| Transcript show: 'stroke';cr ]"
 	"cursorColour := Color red."
 ]
@@ -4859,4 +4859,10 @@ TerminalEmulatorLineMorph >> selectionColumnAt: screenPosition [
 	col := screenPosition x - self bounds left // pitch + 1 min: lineState stringSize max: 1.
 	col > (lineState lastColumn + 1) ifTrue: [^lineState stringSize + 1].
 	^col
+]
+
+{ #category : #'initialize-release' }
+TerminalEmulatorLineMorph >> setUpFont [
+	font := self defaultFont.
+	pitch := font widthOf: $W
 ]

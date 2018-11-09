@@ -77,33 +77,8 @@ Class {
 		'SavedLineLimit',
 		'TextCursor'
 	],
-	#classInstVars : [
-		'loaded'
-	],
 	#category : #'PTerm-UI'
 }
-
-{ #category : #'as yet unclassified' }
-TerminalEmulatorMorph class >> checkFonts [
-	|path refreshed|
-	path := self fontsDir.
-	loaded ifNil: [ loaded := false ].
-	refreshed := true.
-	self fontsURI do:[:a|
-		(path / (a key)) exists ifFalse:[
-			refreshed := false.
-			"Download the font"
-			ZnClient new
-				url: a value;
-				downloadTo: path.
-		]
-	] displayingProgress: [ 'Checking font' ].
-	(refreshed & loaded) ifTrue:[^self].
-	FreeTypeFontProvider current prepareForUpdating.
-	FreeTypeFontProvider current updateAvailableFontFamilies.
-	FreeTypeFontProvider current updateFromSystem.
-	loaded := true.
-]
 
 { #category : #'as yet unclassified' }
 TerminalEmulatorMorph class >> example [
@@ -157,7 +132,6 @@ TerminalEmulatorMorph class >> initialize [
 	"Set the default selection handling behaviour."
 	MouseControlsSelection := true.
 	KeyboardControlsSelection := false.
-	loaded := false.
 	"Notes:
 	If MouseControlsSelection then selected text is copied to the clipboard when selection tracking finishes and the yellow button pastes from the clipboard into the terminal window.  Note that this moves the VT Options menu off the yellowButton and onto control-yellowButton (which is usually bound to the morph menu by things beyond our control; i.e., the VT menu becomes unavailable from within the TtyMorph itself.).
 	If KeyboardControlsSelection then cmd-c copies the last mouse selection to the clipboard and cmd-v pastes the clipboard text into the terminal.  Note that this means M-C and M-V will no longer be available to programs such as Emacs.
@@ -897,6 +871,7 @@ TerminalEmulatorMorph >> initialExtent [
 
 { #category : #'initialize-release' }
 TerminalEmulatorMorph >> initialize [
+	self announcer when: TerminalEmulatorFontChange do:[:e| self setUpFont].
 	^self initialize: 80@24
 ]
 
@@ -904,7 +879,6 @@ TerminalEmulatorMorph >> initialize [
 TerminalEmulatorMorph >> initialize: size [
 
 	super initialize.
-	self class checkFonts.
 	self borderWidth: 2.
 	color := Color white.
 	inset := 2.
@@ -940,8 +914,7 @@ TerminalEmulatorMorph >> initializeTabs [
 TerminalEmulatorMorph >> initializeTeletype: size [
 	"Initialize the default behaviour: dumb terminal with local echo and default xterm VT options."
 
-	font := LogicalFont familyName:'Unifont' pointSize: 11.
-	pitch := font widthOf: $W.
+	self setUpFont.
 	skip := font height.
 	cols := size x.
 	rows := size y.
@@ -1643,6 +1616,17 @@ TerminalEmulatorMorph >> setTab [
 		nextPutAll: (String withAll: (tabs collect: [:t | t ifTrue: [$!] ifFalse: [$.]]));
 		cr; endEntry
 "
+]
+
+{ #category : #'initialize-release' }
+TerminalEmulatorMorph >> setUpFont [
+	font := TerminalEmulator font.
+	pitch := font widthOf: $W.
+	submorphs do:[:m|
+		m class = TerminalEmulatorLineMorph ifTrue:[m setUpFont]].
+	submorphs isEmpty ifTrue:[^self].
+	self extent: self extent.
+	self changed
 ]
 
 { #category : #'operating modes' }

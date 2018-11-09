@@ -21,5 +21,5 @@ spec for: #common do: [
 
 { #category : #baselines }
 BaselineOfPTerm >> checkFonts [
-	TerminalEmulatorMorph checkFonts 
+	TerminalEmulator checkFonts 
 ]

@@ -26,8 +26,35 @@ Class {
 		'Shortcuts',
 		'TerminalType'
 	],
+	#classInstVars : [
+		'font'
+	],
 	#category : #'PTerm-UI'
 }
+
+{ #category : #font }
+TerminalEmulator class >> checkFont [
+	|path|
+	(self hasFont: self fontFamily) ifTrue:[^self fontFamily].
+	path := self fontsDir.
+	[
+		self fontsURI do:[:a|
+			(path / (a key)) exists ifFalse:[
+				"Download the font"
+				ZnClient new
+					url: a value;
+					downloadTo: path.
+			]
+		] displayingProgress: [ 'Checking and downloading font' ].
+		FreeTypeFontProvider current prepareForUpdating.
+		FreeTypeFontProvider current updateAvailableFontFamilies.
+		FreeTypeFontProvider current updateEmbeddedFreeTypeFonts.
+		FreeTypeFontProvider current updateFromDirectory: self fontsDir  done: Set new.
+		FreeTypeFontProvider current updateAvailableFontFamilies.
+		(self hasFont: self fontFamily) ifFalse:[^self selecFont].
+		^self fontFamily
+	] on: Error do: [^self selecFont]
+]
 
 { #category : #'instance creation' }
 TerminalEmulator class >> environ [
@@ -39,6 +66,47 @@ TerminalEmulator class >> environ [
 	collection add: 'LANG=en_US.UTF-8'.
 	collection add: 'TERM=linux'.
 	^collection 
+]
+
+{ #category : #accessing }
+TerminalEmulator class >> font [
+	font ifNil: [ font := LogicalFont familyName: 'DejaVu Sans Mono' pointSize: 10 ].
+	^ font
+]
+
+{ #category : #accessing }
+TerminalEmulator class >> font: anObject [
+	font := anObject
+]
+
+{ #category : #font }
+TerminalEmulator class >> fontFamily [
+	^  self font familyName 
+]
+
+{ #category : #font }
+TerminalEmulator class >> fontsDir [
+	|path|
+	path := Smalltalk vmDirectory asFileReference  / 'Fonts'.
+	path exists ifFalse:[ path createDirectory  ].
+	^path
+]
+
+{ #category : #font }
+TerminalEmulator class >> fontsURI [
+^{
+	'DejaVuSansMono-Bold.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Bold.ttf'.
+	'DejaVuSansMono-BoldOblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-BoldOblique.ttf'.
+	'DejaVuSansMono-Oblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Oblique.ttf'.
+	'DejaVuSansMono.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono.ttf'.
+}
+]
+
+{ #category : #font }
+TerminalEmulator class >> hasFont: fontName [
+	^(FreeTypeFontProvider current families includesKey: fontName).
+	"check if font file exists"
+	
 ]
 
 { #category : #'world menu' }
@@ -77,7 +145,11 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 
 { #category : #'instance creation' }
 TerminalEmulator class >> new [
-
+	self announcer when: TerminalEmulatorFontChange do: [
+		self allInstancesDo: [ :i |
+			i updateFont	
+		]
+	].
 	^super new initialize
 ]
 
@@ -97,6 +169,7 @@ TerminalEmulator class >> openBash [
 TerminalEmulator class >> openShell: path [
 	
 	| win term |
+	self checkFont.
 	term := (PTerm new xspawn: { path. '-i'} env: self environ ).
 	"term := (PTermEcho new)."
 	win := self open.
@@ -108,6 +181,64 @@ TerminalEmulator class >> openShell: path [
 	win extent: win extent.
 	^ win	
 	
+]
+
+{ #category : #font }
+TerminalEmulator class >> selecFont [
+	|fontSelector|
+	self inform: 'Please select a (mono) font from system'.
+	font := LogicalFont familyName: 'Source Code Pro' pointSize: 10.
+	FreeTypeFontProvider current prepareForUpdating.
+	FreeTypeFontProvider current updateAvailableFontFamilies.
+	FreeTypeFontProvider current updateFromSystem.
+	fontSelector := FreeTypeFontSelectorDialogWindow new.
+	UITheme builder openModal: fontSelector.
+	fontSelector cancelled ifFalse:[
+		font := fontSelector selectedFont
+	].
+	"trigger font change"
+	self announcer announce: (TerminalEmulatorFontChange font: font).
+	^ font familyName
+	
+]
+
+{ #category : #font }
+TerminalEmulator class >> uniFontURI [
+	^{'unifont-11.0.02.ttf' -> 'http://unifoundry.com/pub/unifont/unifont-11.0.02/font-builds/unifont-11.0.02.ttf'}
+]
+
+{ #category : #font }
+TerminalEmulator class >> useUnifont [
+	|path|
+	(self hasFont: 'Unifont') ifTrue:[^self].
+	path := self fontsDir.
+	self uniFontURI do:[:a|
+		(path / (a key)) exists ifFalse:[
+		"Download the font"
+			ZnClient new
+				url: a value;
+				downloadTo: path.
+		]
+	] displayingProgress: [ 'Checking and downloading Unifont font' ].
+	FreeTypeFontProvider current updateFromDirectory: self fontsDir  done: Set new.
+	FreeTypeFontProvider current updateAvailableFontFamilies.
+	(self hasFont: 'Unifont') ifFalse:[^self].
+	font := LogicalFont familyName: 'Unifont' pointSize: 11.
+	self announcer announce: (TerminalEmulatorFontChange font:font)
+	
+]
+
+{ #category : #'world menu' }
+TerminalEmulator class >> windowMenuOn: aBuilder [
+	<windowMenu>
+	"super windowMenuOn: aBuilder."
+	(aBuilder item: #'Change PTerm default font')
+		order: 2.4;
+		action: [ self selecFont ].
+	(aBuilder item: #'Download and use Unifont')
+		order: 2.5;
+		action: [ self useUnifont];
+		withSeparatorAfter.
 ]
 
 { #category : #connections }
@@ -180,12 +311,6 @@ TerminalEmulator >> initialize [
 	super initialize.
 	self setLabel: (windowTitle := iconTitle := 'Terminal').
 	self extent: 10@10.
-]
-
-{ #category : #private }
-TerminalEmulator >> menuBlock: aBlock [
-
-	aBlock value
 ]
 
 { #category : #'initialize-release' }
@@ -276,4 +401,9 @@ TerminalEmulator >> tty [
 TerminalEmulator >> ttyLayoutBounds [
 
 	^self layoutBounds
+]
+
+{ #category : #events }
+TerminalEmulator >> updateFont [
+	tty setUpFont.
 ]
