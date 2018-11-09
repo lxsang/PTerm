@@ -27,7 +27,8 @@ Class {
 		'TerminalType'
 	],
 	#classInstVars : [
-		'font'
+		'font',
+		'palette'
 	],
 	#category : #'PTerm-UI'
 }
@@ -145,9 +146,10 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 
 { #category : #'instance creation' }
 TerminalEmulator class >> new [
-	self announcer when: TerminalEmulatorFontChange do: [
+	self announcer when: TerminalEmulatorConfigChange do: [
 		self allInstancesDo: [ :i |
-			i updateFont	
+			i class = LogicalFont ifTrue:[i updateFont]
+			ifFalse:[i updateTheme]
 		]
 	].
 	^super new initialize
@@ -183,6 +185,17 @@ TerminalEmulator class >> openShell: path [
 	
 ]
 
+{ #category : #accessing }
+TerminalEmulator class >> palette [
+	palette ifNil: [ palette := PTermSolarizedTheme dark ].
+	^ palette
+]
+
+{ #category : #accessing }
+TerminalEmulator class >> palette: anObject [
+	palette := anObject
+]
+
 { #category : #font }
 TerminalEmulator class >> selecFont [
 	|fontSelector|
@@ -197,9 +210,27 @@ TerminalEmulator class >> selecFont [
 		font := fontSelector selectedFont
 	].
 	"trigger font change"
-	self announcer announce: (TerminalEmulatorFontChange font: font).
+	self announcer announce: (TerminalEmulatorConfigChange data: font).
 	^ font familyName
 	
+]
+
+{ #category : #theme }
+TerminalEmulator class >> selectTheme [
+	|themeSelector themes|
+	themes := OrderedCollection new.
+	TerminalEmulatorColorPalette subclassesDo: [ :e|
+		themes add: e light; add: e dark.
+	].
+	themeSelector := ListDialogWindow new.
+	themeSelector acceptNewEntry: false.
+	themeSelector getList: [ :r | themes select: [ :e | r search: e name ] ].
+	themeSelector displayBlock: [:e| e name  ].
+	UITheme builder openModal: themeSelector.
+	themeSelector cancelled ifFalse:[
+		palette := themeSelector answer.
+		self announcer announce: (TerminalEmulatorConfigChange data:palette)
+	].
 ]
 
 { #category : #font }
@@ -212,7 +243,7 @@ TerminalEmulator class >> useUnifont [
 	|path|
 	(self hasFont: 'Unifont') ifTrue:[
 		font := LogicalFont familyName: 'Unifont' pointSize: 11.
-		^self announcer announce: (TerminalEmulatorFontChange font:font)].
+		^self announcer announce: (TerminalEmulatorConfigChange data:font)].
 	path := self fontsDir.
 	self uniFontURI do:[:a|
 		(path / (a key)) exists ifFalse:[
@@ -226,7 +257,7 @@ TerminalEmulator class >> useUnifont [
 	FreeTypeFontProvider current updateAvailableFontFamilies.
 	(self hasFont: 'Unifont') ifFalse:[^self].
 	font := LogicalFont familyName: 'Unifont' pointSize: 11.
-	self announcer announce: (TerminalEmulatorFontChange font:font)
+	self announcer announce: (TerminalEmulatorConfigChange data:font)
 	
 ]
 
@@ -240,6 +271,10 @@ TerminalEmulator class >> windowMenuOn: aBuilder [
 	(aBuilder item: #'Download and use Unifont')
 		order: 2.5;
 		action: [ self useUnifont];
+		withSeparatorAfter.
+	(aBuilder item: #'Themes')
+		order: 2.6;
+		action: [ self selectTheme];
 		withSeparatorAfter.
 ]
 
@@ -408,4 +443,9 @@ TerminalEmulator >> ttyLayoutBounds [
 { #category : #events }
 TerminalEmulator >> updateFont [
 	tty setUpFont.
+]
+
+{ #category : #events }
+TerminalEmulator >> updateTheme [
+	tty setUpTheme.
 ]
