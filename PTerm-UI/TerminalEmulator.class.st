@@ -210,7 +210,9 @@ TerminalEmulator class >> uniFontURI [
 { #category : #font }
 TerminalEmulator class >> useUnifont [
 	|path|
-	(self hasFont: 'Unifont') ifTrue:[^self].
+	(self hasFont: 'Unifont') ifTrue:[
+		font := LogicalFont familyName: 'Unifont' pointSize: 11.
+		^self announcer announce: (TerminalEmulatorFontChange font:font)].
 	path := self fontsDir.
 	self uniFontURI do:[:a|
 		(path / (a key)) exists ifFalse:[
