@@ -21,5 +21,7 @@ spec for: #common do: [
 
 { #category : #baselines }
 BaselineOfPTerm >> checkFont [
+	FreeTypeFontProvider current prepareForUpdating.
+	FreeTypeFontProvider current updateAvailableFontFamilies.
 	TerminalEmulator checkFont
 ]
