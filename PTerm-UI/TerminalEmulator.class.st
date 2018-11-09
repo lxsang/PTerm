@@ -199,12 +199,13 @@ TerminalEmulator class >> palette: anObject [
 TerminalEmulator class >> selecFont [
 	|fontSelector|
 	self inform: 'Please select a (mono) font from system'.
-	font := LogicalFont familyName: 'Source Code Pro' pointSize: 10.
+	font ifNil: [ font := LogicalFont familyName: 'Source Code Pro' pointSize: 10 ].
 	FreeTypeFontProvider current prepareForUpdating.
 	FreeTypeFontProvider current updateAvailableFontFamilies.
 	FreeTypeFontProvider current updateFromSystem.
 	FreeTypeFontProvider current updateAvailableFontFamilies.
 	fontSelector := FreeTypeFontSelectorDialogWindow new.
+	fontSelector selectedFont: font.
 	UITheme builder openModal: fontSelector.
 	fontSelector cancelled ifFalse:[
 		font := fontSelector selectedFont.
@@ -217,20 +218,19 @@ TerminalEmulator class >> selecFont [
 
 { #category : #theme }
 TerminalEmulator class >> selectTheme [
-	|themeSelector themes|
+	| themes selected|
 	themes := OrderedCollection new.
 	TerminalEmulatorColorPalette subclassesDo: [ :e|
 		themes add: e light; add: e dark.
 	].
-	themeSelector := ListDialogWindow new.
-	themeSelector acceptNewEntry: false.
-	themeSelector getList: [ :r | themes select: [ :e | r search: e name ] ].
-	themeSelector displayBlock: [:e| e name  ].
-	UITheme builder openModal: themeSelector.
-	themeSelector cancelled ifFalse:[
-		palette := themeSelector answer.
-		self announcer announce: (TerminalEmulatorConfigChange data:palette)
-	].
+	selected := (UIManager default 
+                chooseFrom: (themes collect: [:e| e name]) 
+                values: themes  
+                message: 'Current selected theme is: "', self palette name, '". Pick another one?' 
+                title: 'Select theme').
+	selected ifNil:[^self].
+	palette := selected.
+	self announcer announce: (TerminalEmulatorConfigChange data:palette)
 ]
 
 { #category : #font }
