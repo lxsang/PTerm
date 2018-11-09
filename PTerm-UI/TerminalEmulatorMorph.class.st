@@ -103,26 +103,6 @@ TerminalEmulatorMorph class >> example2 [
 ]
 
 { #category : #'as yet unclassified' }
-TerminalEmulatorMorph class >> fontsDir [
-	|path|
-	path := Smalltalk vmDirectory asFileReference  / 'Fonts'.
-	path exists ifFalse:[ path createDirectory  ].
-	^path
-]
-
-{ #category : #'as yet unclassified' }
-TerminalEmulatorMorph class >> fontsURI [
-^{
-	"'DejaVuSansMono-Bold.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Bold.ttf'.
-	'DejaVuSansMono-BoldOblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-BoldOblique.ttf'.
-	'DejaVuSansMono-Oblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Oblique.ttf'.
-	'DejaVuSansMono.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono.ttf'"
-	"We use unifont for better unicode support"
-	'unifont-11.0.02.ttf' -> 'http://unifoundry.com/pub/unifont/unifont-11.0.02/font-builds/unifont-11.0.02.ttf'
-}
-]
-
-{ #category : #'as yet unclassified' }
 TerminalEmulatorMorph class >> initialize [
 	"TerminalEmulatorMorph initialize"
 
