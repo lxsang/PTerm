@@ -4812,7 +4812,6 @@ TerminalEmulatorLineMorph >> selectionColumnAt: screenPosition [
 
 { #category : #'initialize-release' }
 TerminalEmulatorLineMorph >> setUpFont [
-	Transcript show: 'oj'; cr.
 	font := self defaultFont.
 	pitch := font widthOf: $W
 ]
