@@ -49,8 +49,7 @@ TerminalEmulator class >> checkFont [
 		] displayingProgress: [ 'Checking and downloading font' ].
 		FreeTypeFontProvider current prepareForUpdating.
 		FreeTypeFontProvider current updateAvailableFontFamilies.
-		FreeTypeFontProvider current updateEmbeddedFreeTypeFonts.
-		FreeTypeFontProvider current updateFromDirectory: self fontsDir  done: Set new.
+		FreeTypeFontProvider current updateFromSystem.
 		FreeTypeFontProvider current updateAvailableFontFamilies.
 		(self hasFont: self fontFamily) ifFalse:[^self selecFont].
 		^self fontFamily
@@ -204,6 +203,7 @@ TerminalEmulator class >> selecFont [
 	FreeTypeFontProvider current prepareForUpdating.
 	FreeTypeFontProvider current updateAvailableFontFamilies.
 	FreeTypeFontProvider current updateFromSystem.
+	FreeTypeFontProvider current updateAvailableFontFamilies.
 	fontSelector := FreeTypeFontSelectorDialogWindow new.
 	UITheme builder openModal: fontSelector.
 	fontSelector cancelled ifFalse:[
@@ -253,7 +253,9 @@ TerminalEmulator class >> useUnifont [
 				downloadTo: path.
 		]
 	] displayingProgress: [ 'Checking and downloading Unifont font' ].
-	FreeTypeFontProvider current updateFromDirectory: self fontsDir  done: Set new.
+	FreeTypeFontProvider current prepareForUpdating.
+	FreeTypeFontProvider current updateAvailableFontFamilies.
+	FreeTypeFontProvider current updateFromSystem.
 	FreeTypeFontProvider current updateAvailableFontFamilies.
 	(self hasFont: 'Unifont') ifFalse:[^self].
 	font := LogicalFont familyName: 'Unifont' pointSize: 11.
