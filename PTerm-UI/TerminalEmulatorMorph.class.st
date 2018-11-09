@@ -31,7 +31,6 @@ Class {
 		'bg',
 		'em',
 		'rv',
-		'ec',
 		'tabs',
 		'scroll',
 		'scrollOn',
@@ -52,7 +51,6 @@ Class {
 		'deleteIsDel',
 		'altScreenSwitch',
 		'altScreenActive',
-		'altScreenColours',
 		'reverseVideo',
 		'hasFocus',
 		'mousePosition',
@@ -851,7 +849,7 @@ TerminalEmulatorMorph >> initialExtent [
 
 { #category : #'initialize-release' }
 TerminalEmulatorMorph >> initialize [
-	self announcer when: TerminalEmulatorFontChange do:[:e| self setUpFont].
+	self announcer when: TerminalEmulatorConfigChange do:[:e| self setUpFont].
 	^self initialize: 80@24
 ]
 
@@ -908,7 +906,6 @@ TerminalEmulatorMorph >> initializeTeletype: size [
 	bg := 7.
 	em := 0.
 	rv := false.
-	ec := true.
 	session := nil.
 	self initializeTabs.
 	self initializeTerminalModes.	"Default low protocol: local echo"
@@ -918,7 +915,6 @@ TerminalEmulatorMorph >> initializeTeletype: size [
 	autoFlush := 0.
 	steps := 0.
 	altScreenActive := false.
-	altScreenColours := true.
 	hasFocus := true.
 	selectionStart := selectionEnd := nil.
 	selectionActive := false.
@@ -1050,7 +1046,7 @@ TerminalEmulatorMorph >> linesChanged [
 		line := lines at: (lineNo := lineNo + 1).
 		line setWidth: cols.
 		(submorphs at: i) lineState: line].
-	1 to: rows do: [ :i | (submorphs at: i) rv: rv; cursorColour: cursorColour; ec: ec & altScreenColours].
+	1 to: rows do: [ :i | (submorphs at: i) rv: rv; cursorColour: cursorColour].
 	self autoFlush
 ]
 
@@ -1308,13 +1304,16 @@ TerminalEmulatorMorph >> run [
 ]
 
 { #category : #accessing }
-TerminalEmulatorMorph >> rv: aBoolean [
-	"Set the programmed reverse video flag.  Not to be confused with reverseVideo, which is a user preference that inverts the sense of the programmed change."
+TerminalEmulatorMorph >> rv [
+	^ rv
+]
 
+{ #category : #accessing }
+TerminalEmulatorMorph >> rv: aBoolean [
 	rv == aBoolean ifTrue: [^self].
-	rv := aBoolean..
+	rv := aBoolean.
 	submorphs from: 1 to: rows do: [ :m | m rv: (rv xor: reverseVideo)].
-	self changed
+self changed
 ]
 
 { #category : #selection }
@@ -1478,13 +1477,6 @@ TerminalEmulatorMorph >> sessionNote: aSymbol with: anObject [
 ]
 
 { #category : #'operating modes' }
-TerminalEmulatorMorph >> setAltScreenColours: aBoolean [
-
-	altScreenColours := aBoolean.
-	self setEmacsColours: ec.
-]
-
-{ #category : #'operating modes' }
 TerminalEmulatorMorph >> setAutoLinefeed: aBoolean [
 
 	autoLinefeed := aBoolean
@@ -1500,15 +1492,6 @@ TerminalEmulatorMorph >> setAutoWrap: aBoolean [
 TerminalEmulatorMorph >> setBackground: index [
 
 	bg := index min: 7 max: 0.
-]
-
-{ #category : #'operating modes' }
-TerminalEmulatorMorph >> setEmacsColours: aBoolean [
-
-	(ec := aBoolean) & altScreenColours
-		ifTrue: [submorphs from: 1 to: rows do: [:line | line emacsColours]]
-		ifFalse: [submorphs from: 1 to: rows do: [:line | line normalColours]].
-	self changed
 ]
 
 { #category : #'character writing' }
@@ -1606,6 +1589,14 @@ TerminalEmulatorMorph >> setUpFont [
 		m class = TerminalEmulatorLineMorph ifTrue:[m setUpFont]].
 	submorphs isEmpty ifTrue:[^self].
 	self extent: self extent.
+	self changed
+]
+
+{ #category : #'initialize-release' }
+TerminalEmulatorMorph >> setUpTheme [
+	submorphs do:[:m|
+		m class = TerminalEmulatorLineMorph ifTrue:[m setUpTheme]].
+	submorphs isEmpty ifTrue:[^self].
 	self changed
 ]
 

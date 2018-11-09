@@ -183,7 +183,7 @@ TerminalEmulatorXterm >> restoreBuffer [
 	"Restore the tty to its previously saved state."
 
 	savedBuffer isNil ifFalse: [window bufferState: savedBuffer].
-	window setEmacsColours: false
+	"window setEmacsColours: false"
 ]
 
 { #category : #private }

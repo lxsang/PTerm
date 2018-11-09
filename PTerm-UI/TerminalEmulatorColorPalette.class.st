@@ -7,23 +7,27 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'background',
-		'foreground'
-	],
-	#classInstVars : [
-		'colors'
+		'foreground',
+		'mode'
 	],
 	#category : #'PTerm-UI'
 }
 
 { #category : #accessing }
 TerminalEmulatorColorPalette class >> colors [
-	colors ifNil: [ colors := self initializeColors ].
-	^colors
+	^self initializeColors 
 ]
 
 { #category : #initialization }
 TerminalEmulatorColorPalette class >> dark [
-	^self mode: #dark
+	|colors|
+	colors := self colors.
+	^self new 
+		foreground:  (colors at:1) shallowCopy;
+		background: (colors at:2) shallowCopy;
+		reversePolarity;
+		mode: #dark;
+		yourself
 ]
 
 { #category : #accessing }
@@ -35,18 +39,16 @@ TerminalEmulatorColorPalette class >> initializeColors [
 
 { #category : #initialization }
 TerminalEmulatorColorPalette class >> light [
-	^self mode: #light
-]
-
-{ #category : #initialization }
-TerminalEmulatorColorPalette class >> mode: mode [
+	|colors|
+	colors := self colors.
 	^self new 
-		foreground:  (self colors at:1);
-		background: (self colors at:2);
+		foreground:  (colors at:1) shallowCopy;
+		background: (colors at:2) shallowCopy;
+		mode: #light;
 		yourself
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #theming }
 TerminalEmulatorColorPalette class >> rgbTriplets [
 	^ self subclassResponsibility 
 ]
@@ -75,6 +77,21 @@ TerminalEmulatorColorPalette >> foreground: anObject [
 TerminalEmulatorColorPalette >> initialize [
 	background := Array new: 8.
 	foreground := Array new: 8.
+]
+
+{ #category : #accessing }
+TerminalEmulatorColorPalette >> mode [
+	^ mode
+]
+
+{ #category : #accessing }
+TerminalEmulatorColorPalette >> mode: anObject [
+	mode := anObject
+]
+
+{ #category : #private }
+TerminalEmulatorColorPalette >> name [
+	^ self className, ' ', mode
 ]
 
 { #category : #private }

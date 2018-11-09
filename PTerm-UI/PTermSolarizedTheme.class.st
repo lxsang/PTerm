@@ -4,7 +4,7 @@ Class {
 	#category : #'PTerm-UI'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #theming }
 PTermSolarizedTheme class >> rgbTriplets [
 	^ {
 		"foreground"

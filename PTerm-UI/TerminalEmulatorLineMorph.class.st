@@ -24,11 +24,7 @@ Class {
 		'cursorColour'
 	],
 	#classVars : [
-		'Background',
-		'Background2',
-		'DefaultStyle',
-		'Foreground',
-		'Foreground2'
+		'DefaultStyle'
 	],
 	#category : #'PTerm-UI'
 }
@@ -4587,7 +4583,7 @@ ENDFONT
 ]
 
 { #category : #'class initialisation' }
-TerminalEmulatorLineMorph class >> initialize [
+TerminalEmulatorLineMorph class >> initializeBak [
 	"TerminalEmulatorLineMorph initialize"
 
 	"ISO 6429 colour indices"
@@ -4627,12 +4623,11 @@ TerminalEmulatorLineMorph >> contents: aLineState [
 	"Initialize the receiver with the given contents."
 
 	super initialize.
-	fgMap := Foreground shallowCopy.
-	bgMap := Background shallowCopy.
+	rv := false.
+	self setUpTheme.
 	lineState := aLineState.
 	self setUpFont.
 	color := Color white.
-	rv := false.
 	cursorColour := nil.
 ]
 
@@ -4712,20 +4707,6 @@ TerminalEmulatorLineMorph >> drawOn: aCanvas [
 		drawCursorOn: aCanvas
 ]
 
-{ #category : #accessing }
-TerminalEmulatorLineMorph >> ec: aBoolean [
-
-	aBoolean ifTrue: [self emacsColours] ifFalse: [self normalColours]
-]
-
-{ #category : #accessing }
-TerminalEmulatorLineMorph >> emacsColours [
-
-	fgMap := Foreground2 shallowCopy.
-	bgMap := Background2 shallowCopy.
-	rv ifTrue: [self reversePolarity]
-]
-
 { #category : #drawing }
 TerminalEmulatorLineMorph >> fitContents [
 	"If the receiver has changed width then update my geometry."
@@ -4753,7 +4734,7 @@ TerminalEmulatorLineMorph >> initialize [
 	"Initialize the receiver with empty contents."
 
 	self contents: TerminalEmulatorTextState new.
-	self announcer when: TerminalEmulatorFontChange  do: [ :e| self setUpFont. Transcript show: 'font changed']. 
+	self announcer when: TerminalEmulatorConfigChange  do: [ :e| self setUpFont. Transcript show: 'font changed']. 
 	"self on: Character null ctrl  do: [ :e| Transcript show: 'stroke';cr ]"
 	"cursorColour := Color red."
 ]
@@ -4773,39 +4754,8 @@ TerminalEmulatorLineMorph >> lineState: state [
 	state changed: true.		"force redraw on next cycle"
 ]
 
-{ #category : #accessing }
-TerminalEmulatorLineMorph >> normalColours [
-
-	fgMap := Foreground shallowCopy.
-	bgMap := Background shallowCopy.
-	rv ifTrue: [self reversePolarity]
-]
-
 { #category : #drawing }
-TerminalEmulatorLineMorph >> oldDrawLineOn: aCanvas [
-
-	| port tmp |
-	self runsDo: [:l :r :fg :bg :em |
-		port := bounds insetOriginBy: (pitch * (l - 1) @ 0) cornerBy: 0@0.
-		(em bitAnd: 64) == 64 ifTrue: [tmp := fg.  fg := bg.  bg := tmp].
-		aCanvas
-			"fillRectangle: port fillStyle: bg;"
-			drawString: lineState string
-			from: l to: r in: port
-			font: font
-			color: fg
-			background: bg.
-		(em bitAnd: 1) == 1 ifTrue:	"bold"
-			[aCanvas drawString: lineState string from: l to: r at: port topLeft + (1@0) font: font color: fg].
-		(em bitAnd: 8) == 8 ifTrue:	"underline"
-			[aCanvas line: port bottomLeft - (0@1) to: port bottomRight - (1@1) width: 1 color: fg]].
-
-]
-
-{ #category : #private }
 TerminalEmulatorLineMorph >> reversePolarity [
-	"It's almost daybreak and my method names are getting silly."
-
 	fgMap swap: 1 with: fgMap size.
 	bgMap swap: 1 with: bgMap size.
 ]
@@ -4839,11 +4789,10 @@ TerminalEmulatorLineMorph >> runsDo: aBlock [
 
 { #category : #accessing }
 TerminalEmulatorLineMorph >> rv: aBoolean [
-
 	aBoolean ~~ rv
 		ifTrue:
-			[rv := aBoolean.
-			 self reversePolarity]
+		[rv := aBoolean.
+			self reversePolarity]
 ]
 
 { #category : #selection }
@@ -4865,4 +4814,13 @@ TerminalEmulatorLineMorph >> selectionColumnAt: screenPosition [
 TerminalEmulatorLineMorph >> setUpFont [
 	font := self defaultFont.
 	pitch := font widthOf: $W
+]
+
+{ #category : #'initialize-release' }
+TerminalEmulatorLineMorph >> setUpTheme [
+	|scheme|
+	scheme := TerminalEmulator palette.
+	fgMap := scheme foreground shallowCopy.
+	bgMap := scheme background shallowCopy.
+	rv ifTrue: [ self  reversePolarity ]
 ]
