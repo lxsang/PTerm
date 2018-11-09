@@ -20,6 +20,6 @@ spec for: #common do: [
 ]
 
 { #category : #baselines }
-BaselineOfPTerm >> checkFonts [
-	TerminalEmulator checkFonts 
+BaselineOfPTerm >> checkFont [
+	TerminalEmulator checkFont
 ]
