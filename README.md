@@ -8,13 +8,6 @@ Require libc compliant with the host pharo VM (32 or 64 bits) to be installed.
 
 ![PTerm](https://github.com/lxsang/PTerm/raw/master/Pterm.gif)
 
-
-## Update:
-* Add unicode support
-* PTerm now uses dark mode
-
-![](https://github.com/lxsang/online_stuffs/raw/master/pterm-dark.png)
-
 ## Install
 
 Install on pharo 7
@@ -30,3 +23,11 @@ Metacello new
 ```Smalltalk
 TerminalEmulator openShell: '/bin/bash'
 ```
+
+## Fonts
+By default, PTerm automatically downloads and uses 'DejaVu Sans Mono' as default font, but you can alway change the default font by accessing to the terminal window menu as bellow:
+
+![](https://github.com/lxsang/online_stuffs/raw/master/font_selector.png)
+
+Normally, the default font (DejaVu Sans Mono) supports most commonly used unicode character.
+But for those who want heavily unicode support (chinese, Thai, japanese, etc.), PTerm has a second option in the window menu, that allows to automatically download and use Unifont (12 MB) as default font. This font offers 65536 unicode codepoints hence supports almost every languages, it dont look really nice though.
