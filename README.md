@@ -39,4 +39,6 @@ The default theme of PTerm can also be changed via the window menu, some availab
 * Xterm (dark and light)
 * Tango (dark and light)
 * Linux console (dark and light)
+* Atom (dark and light)
+* Atom One (dark and light)
 * more incomming...
