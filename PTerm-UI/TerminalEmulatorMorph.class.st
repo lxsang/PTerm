@@ -78,7 +78,7 @@ Class {
 	#category : #'PTerm-UI'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #example }
 TerminalEmulatorMorph class >> example [
 	"TerminalEmulatorMorph example"
 
@@ -90,7 +90,7 @@ TerminalEmulatorMorph class >> example [
 	^tty
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #examples }
 TerminalEmulatorMorph class >> example2 [
 	"TerminalEmulatorMorph example2"
 
@@ -100,7 +100,7 @@ TerminalEmulatorMorph class >> example2 [
 	top openInHand
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'class initialization' }
 TerminalEmulatorMorph class >> initialize [
 	"TerminalEmulatorMorph initialize"
 
@@ -117,7 +117,7 @@ TerminalEmulatorMorph class >> initialize [
 	By default we turn mouse selection on and keyboard selection off.  This way the TtyMorph responds to the mouse like a real xterm and the M-C and M-V keys are passed unhindered to Emacs."
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #initialization }
 TerminalEmulatorMorph class >> initializeCharacterClasses [
 	"TerminalEmulatorMorph initializeCharacterClasses asByteArray inspect"
 	"Clicking the red button twice in rapid succession will cause all adjacent characters of the same class (e.g., letters, white space, punctuation) under the pointer to be selected.  Since different people have different preferences for what should be selected (for example, whether filenames should be selected as a whole or as individual path components) the default mapping can be overridden through the use of the CharClass variable.  The default collects whitespace, alphanumeric and special graphics characters into three classes.  Each punctuation character is in a class of its own.
@@ -163,7 +163,7 @@ TerminalEmulatorMorph class >> initializeCharacterClasses [
 	"
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #initialization }
 TerminalEmulatorMorph class >> initializeCursor [
 	"TerminalEmulatorMorph initializeCursor"
 	"TextCursor showWhile: [Sensor waitButton]"
@@ -191,7 +191,7 @@ TerminalEmulatorMorph class >> initializeCursor [
 			offset: -7 @ -7).
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'instance creation' }
 TerminalEmulatorMorph class >> new [
 
 	| tty |
@@ -1258,12 +1258,11 @@ TerminalEmulatorMorph >> protectSelection [
 
 { #category : #'character writing' }
 TerminalEmulatorMorph >> put: aChar [
-
 	scrollOnOutput ifTrue: [self pageEnd].
 	(insertMode and: [x < cols]) ifTrue: [(self protectSelection; currentLine) insertAt: x].
 	(aChar == 13 & autoLinefeed or: [aChar == 10 & autoCR])
 		ifTrue: [self newline]
-		ifFalse: [self putNormal: aChar; cursorRight: 1 wrapping: true]
+		ifFalse: [self putNormal: aChar;cursorRight: 1 wrapping: true]
 ]
 
 { #category : #'character writing' }

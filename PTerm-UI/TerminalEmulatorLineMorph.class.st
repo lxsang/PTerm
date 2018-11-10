@@ -4582,30 +4582,6 @@ ENDFONT
 '
 ]
 
-{ #category : #'class initialisation' }
-TerminalEmulatorLineMorph class >> initializeBak [
-	"TerminalEmulatorLineMorph initialize"
-
-	"ISO 6429 colour indices"
-	Foreground := #(black red green yellow blue magenta cyan white) collect: [:c | Color perform: c].
-	Background := #(black red green yellow blue magenta cyan white) collect: [:c | Color perform: c].
-	"Alternate colour scheme for Emacs: reversed white/black on dark slate grey"
-	(Foreground2 := Foreground shallowCopy) at: 1 put: (Color white); at: 8 put: (Color black).
-	(Background2 := Background shallowCopy) at: 1 put: (Color white); at: 8 put: (Color fromString: '#314D52').
-	true ifTrue: [
-	2 to: 7 do: [:i |
-		Foreground2 at: i put: ((Foreground2 at: i) adjustSaturation: -0.35 brightness: 0.5).
-		Background2 at: i put: ((Background2 at: i) adjustSaturation: -0.35 brightness: 0.5)].
-	] ifFalse: [
-	(Foreground2 := Foreground collect: [:c | c adjustSaturation: -0.35 brightness: 0.5])
-		at: 1 put: (Color white "fromString: '#f7dfb5'"); at: 8 put: (Color black).
-	(Background2 := Background collect: [:c | c adjustSaturation: -0.35 brightness: 0.5])
-		at: 1 put: (Color white); at: 8 put: (Color fromString: '#314D52').
-	].
-	"Offer to create the standard X11 'fixed' font with VT100 graphics and line-drawing characters"
-
-]
-
 { #category : #'instance creation' }
 TerminalEmulatorLineMorph class >> new [
 
@@ -4677,24 +4653,26 @@ TerminalEmulatorLineMorph >> drawCursorOn: aCanvas [
 { #category : #drawing }
 TerminalEmulatorLineMorph >> drawLineOn: aCanvas [
 
-	| port tmp |
+	| port tmp str|
+	str := lineState string.
 	self runsDo: [:l :r :inputFg :inputBg :em |
 		| fg bg |
 		fg := inputFg.
 		bg := inputBg.
-		port := bounds left + ((l - 1) * pitch) @ bounds top corner: bounds left + (lineState stringSize * pitch) @ bounds bottom.
+		port := bounds left + ((l - 1) * pitch) @ bounds top corner: bounds left + (str size * pitch) @ bounds bottom.
 		(em bitAnd: 64) == 64 ifTrue: [tmp := fg.  fg := bg.  bg := tmp].
 		aCanvas
 			fillRectangle: port fillStyle: bg;
-			drawString: lineState string
+			drawString: str
 			from: l to: r in: port
 			font: font
 			color: fg
 			"background: bg".
 		(em bitAnd: 1) == 1 ifTrue:	"bold"
-			[aCanvas drawString: lineState string from: l to: r at: port topLeft + (1@0) font: font color: fg].
+			[aCanvas drawString: str from: l to: r at: port topLeft + (1@0) font: font color: fg].
 		(em bitAnd: 8) == 8 ifTrue:	"underline"
-			[aCanvas line: port bottomLeft - (0@1) to: port bottomRight - (1@1) width: 1 color: fg]].
+			[aCanvas line: port bottomLeft - (0@1) to: port bottomRight - (1@1) width: 1 color: fg]
+		] size: str size.
 
 ]
 
@@ -4765,6 +4743,32 @@ TerminalEmulatorLineMorph >> runsDo: aBlock [
 
 	| fg fgr bg bgr em emr left stringSize |
 	stringSize := lineState stringSize.
+	bgr := lineState bgRuns.  fgr := lineState fgRuns.  emr := lineState emRuns.
+	bg := bgr at: 1.  fg := fgr at: 1.  em := emr at: 1.
+	left := 1.
+	2 to: stringSize do: [:i |
+		(fg ~~ (fgr at: i) or: [bg ~~ (bgr at: i) or: [em ~~ (emr at: i)]])
+			ifTrue:
+				[aBlock valueWithArguments: {
+					left. i - 1.
+					(self foregroundColourAt: fg).
+					(self backgroundColourAt: bg).
+					em.
+					}.
+				 bg := bgr at: i.  fg := fgr at: i.  em := emr at: i.
+				 left := i]].
+	aBlock valueWithArguments: { 
+		left.
+		stringSize.
+		(self foregroundColourAt: fg).
+		(self backgroundColourAt: bg).
+		em }
+]
+
+{ #category : #private }
+TerminalEmulatorLineMorph >> runsDo: aBlock size: stringSize [
+
+	| fg fgr bg bgr em emr left  |
 	bgr := lineState bgRuns.  fgr := lineState fgRuns.  emr := lineState emRuns.
 	bg := bgr at: 1.  fg := fgr at: 1.  em := emr at: 1.
 	left := 1.

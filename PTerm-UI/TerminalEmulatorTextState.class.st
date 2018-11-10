@@ -318,7 +318,12 @@ TerminalEmulatorTextState >> setWidth: width [
 
 { #category : #accessing }
 TerminalEmulatorTextState >> string [
-
+	"check doble world here to return a correct string
+	|off tr|
+	off := (string select: [:c| c isFullWidth]) size.
+	off = 0 ifTrue:[^string].
+	tr := string truncateTo: string size - off.
+	^tr"
 	^string
 ]
 
