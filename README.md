@@ -34,11 +34,11 @@ Normally, the default font (DejaVu Sans Mono) supports most commonly used Unicod
 But for those who want heavily Unicode support (Chinese, Thai, Japanese, etc.), PTerm has a second option in the window menu, that allows to automatically download and use Unifont (12 MB) as the default font. This font offers 65536 Unicode codepoints hence supports almost every language, it doesn't look really nice though.
 
 ### Themes
-The default theme of PTerm can also be changed via the window menu, some available themes:
-* Solarized (dark and light)
-* Xterm (dark and light)
-* Tango (dark and light)
-* Linux console (dark and light)
-* Atom (dark and light)
-* Atom One (dark and light)
+The default theme of PTerm can also be changed via the window menu, some available themes in dark and light mode:
+* Solarized 
+* Xterm
+* Tango
+* Linux console
+* Atom 
+* Atom One
 * more incomming...
