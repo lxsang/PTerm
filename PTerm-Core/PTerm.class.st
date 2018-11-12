@@ -29,7 +29,12 @@ PTerm >> close [
 
 { #category : #accessing }
 PTerm >> downcall: data [
-	^self nextPut: data asCharacter asString
+	data > 255 ifTrue:[
+		"may be unicode"
+		data asCharacter asString utf8Encoded do:[:b| self nextPut: b].
+		^self
+	].
+	^self nextPut: data
 ]
 
 { #category : #protocol }
@@ -66,12 +71,9 @@ PTerm >> name [
 
 { #category : #'instance creation' }
 PTerm >> nextPut: anInt [
-	|data i|
 	self master ifNil:[^self].
-	data := anInt asByteArray.
-	i := 1.
-	data do:[:b| wbuff unsignedByteAt: i put: b. i := i + 1 ].
-	self lib write: self master buffer: wbuff  size: data size. 
+	wbuff unsignedByteAt: 1 put: anInt.
+	self lib write: self master buffer: wbuff  size: 1. 
 ]
 
 { #category : #'instance creation' }

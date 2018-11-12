@@ -1447,8 +1447,8 @@ TerminalEmulatorMorph >> selectionPositionAt: screenPosition [
 { #category : #selection }
 TerminalEmulatorMorph >> sendSelection [
 	"Send the clipboard text to the application."
-
-	down downcallAll: Clipboard clipboardText asString asByteArray
+	Clipboard clipboardText asString do:[:c| down downcall: c codePoint ].
+	"down downcallAll: Clipboard clipboardText asString utf8Encoded"
 ]
 
 { #category : #protocol }

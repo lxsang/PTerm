@@ -515,7 +515,7 @@ TerminalEmulatorVT102 >> downcall: arg [
 
 	(keyMap includesKey: arg)
 		ifTrue: [down downcallAll: (keyMap at: arg)]
-		ifFalse: [down downcall: (arg bitAnd: 127)]
+		ifFalse: [down downcall: ( arg > 255 ifTrue:[arg] ifFalse:[ (arg bitAnd: 127)])]
 ]
 
 { #category : #'control sequences-VT52' }
