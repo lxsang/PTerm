@@ -6,7 +6,8 @@ Class {
 		'pid',
 		'announcer',
 		'sub',
-		'active'
+		'active',
+		'wbuff'
 	],
 	#category : #'PTerm-Core'
 }
@@ -19,10 +20,10 @@ PTerm >> announcer [
 { #category : #protocol }
 PTerm >> close [
 	self master ifNotNil: [
-		self nextPutCr: 'exit'.
+		self nextPutAllCr: 'exit'.
 		pid ifNotNil: [ 
 			self lib kill: pid signal: self lib class SIGKILL.
-		]	
+		].
 	]
 ]
 
@@ -34,7 +35,8 @@ PTerm >> downcall: data [
 { #category : #protocol }
 PTerm >> initialize [ 
 	announcer := Announcer new.
-	active := false
+	active := false.
+	wbuff := ExternalAddress allocate: 8
 ]
 
 { #category : #protocol }
@@ -63,16 +65,25 @@ PTerm >> name [
 ]
 
 { #category : #'instance creation' }
-PTerm >> nextPut: text [
-	|buff|
+PTerm >> nextPut: anInt [
+	|data i|
 	self master ifNil:[^self].
-	buff := ExternalAddress fromString: text.
-	self lib write: self master buffer: buff  size: text size. 
+	data := anInt asByteArray.
+	i := 1.
+	data do:[:b| wbuff unsignedByteAt: i put: b. i := i + 1 ].
+	self lib write: self master buffer: wbuff  size: data size. 
 ]
 
 { #category : #'instance creation' }
-PTerm >> nextPutCr:text [
-	self nextPut: text, Character cr asString
+PTerm >> nextPutAll: text [
+	text do:[:c|
+		self nextPut: c codePoint
+	]
+]
+
+{ #category : #'instance creation' }
+PTerm >> nextPutAllCr:text [
+	self nextPutAll: text, Character cr asString
 ]
 
 { #category : #protocol }
@@ -193,6 +204,7 @@ PTerm >> waitForOutput [
 	self announcer unsubscribe: sub.
 	master := nil.
 	up note: #endpointClosed with: true.
+	wbuff free.
 	Transcript  show: 'Terminal closed'; cr.
 ]
 
