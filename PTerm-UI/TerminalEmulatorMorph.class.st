@@ -849,7 +849,6 @@ TerminalEmulatorMorph >> initialExtent [
 
 { #category : #'initialize-release' }
 TerminalEmulatorMorph >> initialize [
-	self announcer when: TerminalEmulatorConfigChange do:[:e| self setUpFont].
 	^self initialize: 80@24
 ]
 
@@ -994,8 +993,8 @@ TerminalEmulatorMorph >> isConnected [
 { #category : #events }
 TerminalEmulatorMorph >> keyStroke: evt [
 	"Receive a character from the keyboard."
-
 	| char |
+	"evt inspect."
 	scrollOnInput ifTrue: [self pageEnd].
 	char := evt keyValue "keyCharacter asciiValue".
 	evt controlKeyPressed
@@ -1019,7 +1018,7 @@ TerminalEmulatorMorph >> keyStroke: evt [
 
 { #category : #events }
 TerminalEmulatorMorph >> keyboardFocusChange: aBoolean [
-
+	"Transcript show: 'focus changed'; cr."
 	hasFocus := aBoolean
 ]
 

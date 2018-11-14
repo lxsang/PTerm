@@ -33,6 +33,19 @@ Class {
 	#category : #'PTerm-UI'
 }
 
+{ #category : #'shortcut-handling' }
+TerminalEmulator class >> buildTerminalShortcutsOn: aBuilder [ 
+	<keymap>
+	(aBuilder shortcut: #metaw)
+		category: #TerminalEmulator
+		default: PharoShortcuts current closeWindowShortcut 
+		do: [ :target | target simulateShortcutAsKeyStroke: PharoShortcuts current closeWindowShortcut].
+	(aBuilder shortcut: #metau)
+		category: #TerminalEmulator
+		default: $u meta 
+		do: [ :target | target simulateShortcutAsKeyStroke: $u meta].
+]
+
 { #category : #font }
 TerminalEmulator class >> checkFont [
 	|path|
@@ -54,6 +67,17 @@ TerminalEmulator class >> checkFont [
 		(self hasFont: self fontFamily) ifFalse:[^self selecFont].
 		^self fontFamily
 	] on: Error do: [^self selecFont]
+]
+
+{ #category : #'shortcut-handling' }
+TerminalEmulator class >> cleanUpKeyMap [
+	KMRepository default globalCategories do:[:m|
+		"we remove the global Ctrl+u keymap of GTSpotter
+		we dont really need it, but the terminal certainly will"
+		m className asSymbol = #GTSpotterProfiler ifTrue:[
+			KMRepository default globalCategories remove: m
+		]
+	].
 ]
 
 { #category : #'instance creation' }
@@ -171,6 +195,7 @@ TerminalEmulator class >> openShell: path [
 	
 	| win term |
 	self checkFont.
+	self cleanUpKeyMap.
 	term := (PTerm new xspawn: { path. '-i'} env: self environ ).
 	"term := (PTermEcho new)."
 	win := self open.
@@ -349,6 +374,7 @@ TerminalEmulator >> initialize [
 
 	super initialize.
 	self setLabel: (windowTitle := iconTitle := 'Terminal').
+	self attachKeymapCategory: #TerminalEmulator targetting: self.
 	self extent: 10@10.
 ]
 
@@ -428,6 +454,20 @@ TerminalEmulator >> setWindowTitle: aString [
 
 	windowTitle := aString.
 	self isCollapsed ifFalse: [self setLabel: aString].
+]
+
+{ #category : #events }
+TerminalEmulator >> simulateShortcutAsKeyStroke: comb [
+	|evt|
+	evt := KeyboardEvent new 
+				setType: #keystroke 
+				buttons: comb modifier eventCode
+				position: 0@0 
+				keyValue: comb key asciiValue + 1 - $a asciiValue
+				charCode: comb key asciiValue
+				hand: ActiveHand 
+				stamp: 0.
+	tty keyStroke: evt
 ]
 
 { #category : #accessing }
