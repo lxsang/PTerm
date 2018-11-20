@@ -997,12 +997,18 @@ TerminalEmulatorMorph >> keyStroke: evt [
 	"evt inspect."
 	scrollOnInput ifTrue: [self pageEnd].
 	char := evt keyValue "keyCharacter asciiValue".
-	evt controlKeyPressed
-		ifFalse:
+	evt shiftPressed 
+		ifTrue:
 			[char == 1 ifTrue: [^self pageHome].
 			 char == 4 ifTrue: [^self pageEnd].
 			 char == 11 ifTrue: [^self pageUp: rows // 2].
 			 char == 12 ifTrue: [^self pageDown: rows // 2]].
+	evt controlKeyPressed ifFalse:[
+		char == 1 ifTrue: [^down downcallAll:#[27 91 72] ].
+		char == 4 ifTrue: [^down downcallAll:#[27 91 70]  ].
+		char == 11 ifTrue: [^down downcallAll:#[27 91 53 126] ].
+		char == 12 ifTrue: [^down downcallAll: #[27 91 54 126]]
+	].
 	(keyboardControlsSelection and: [evt commandKeyPressed])
 		ifTrue:
 			[evt keyCharacter == $c ifTrue: [^self copySelection].
