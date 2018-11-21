@@ -4656,10 +4656,11 @@ TerminalEmulatorLineMorph >> drawLineOn: aCanvas [
 	| port tmp str|
 	str := lineState string.
 	self runsDo: [:l :r :inputFg :inputBg :em |
-		| fg bg |
+		| fg bg portw|
 		fg := inputFg.
 		bg := inputBg.
-		port := bounds left + ((l - 1) * pitch) @ bounds top corner: bounds left + (str size * pitch) @ bounds bottom.
+		portw := bounds left + ((str size * pitch) min: bounds right - bounds left).
+		port := bounds left + ((l - 1) * pitch) @ bounds top corner: portw @ bounds bottom.
 		(em bitAnd: 64) == 64 ifTrue: [tmp := fg.  fg := bg.  bg := tmp].
 		aCanvas
 			fillRectangle: port fillStyle: bg;

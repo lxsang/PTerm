@@ -857,7 +857,8 @@ TerminalEmulatorMorph >> initialize: size [
 
 	super initialize.
 	self borderWidth: 2.
-	color := Color white.
+	color := TerminalEmulator palette background at:8.
+	"self borderStyle: (BorderStyle color: Color red width: 2)."
 	inset := 2.
 	trackingSelection := false.
 	self
@@ -1146,7 +1147,7 @@ TerminalEmulatorMorph >> mouseLeave: evt [
 	"The cursor just left the window."
 
 	Cursor normal show.
-	self hideScrollbar.
+	"self hideScrollbar."
 	super mouseLeave: evt
 ]
 
@@ -1601,6 +1602,7 @@ TerminalEmulatorMorph >> setUpTheme [
 	submorphs do:[:m|
 		m class = TerminalEmulatorLineMorph ifTrue:[m setUpTheme]].
 	submorphs isEmpty ifTrue:[^self].
+	color := TerminalEmulator palette background at:8.
 	self changed
 ]
 
@@ -1735,7 +1737,7 @@ TerminalEmulatorMorph >> textBounds: outer [
 	left := right := 0.
 	right := self scrollbarWidth / 2.
 	inner := outer insetBy: inset.
-	^(inner left + left) @ (inner top) corner: (inner right - right) @ (inner bottom)
+	^(inner left + left) @ (inner top) corner: (inner right - right - self borderWidth) @ (inner bottom)
 ]
 
 { #category : #selection }
