@@ -4807,7 +4807,9 @@ TerminalEmulatorLineMorph >> selectionColumnAt: screenPosition [
 	| x y col |
 	x := screenPosition x.
 	y := screenPosition y.
-	(self bounds top <= y and: [self bounds bottom >= y]) ifFalse: [^nil].
+	"(self bounds top <= y and: [self bounds bottom >= y]) ifFalse: [^nil]."
+	self bounds bottom < y ifTrue:[^nil].
+	self bounds top > y ifTrue:[^nil].
 	x <= self bounds left ifTrue: [^1].
 	x >= self bounds right ifTrue: [^lineState stringSize + 1].
 	col := screenPosition x - self bounds left // pitch + 1 min: lineState stringSize max: 1.

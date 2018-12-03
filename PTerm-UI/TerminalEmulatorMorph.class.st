@@ -700,7 +700,7 @@ TerminalEmulatorMorph >> getSelectionRegion [
 	"start now guaranteed to be before end in screen"
 	"we don't include the character under selectionStart"
 	end := end - (1@0).
-	^Rectangle origin: start corner: end
+	^{ start. end }
 ]
 
 { #category : #accessing }
@@ -771,16 +771,17 @@ TerminalEmulatorMorph >> hideScrollbar [
 TerminalEmulatorMorph >> highlightSelection [
 	"The selection region has changed.  Update the visual representation."
 
-	| region |
+	| region height|
 	region := self getSelectionRegion.
 	lines do: [ :line | line clearSelection].
-	region height == 0		"single line"
+	height := (region at:2) y - (region at:1) y.
+	height == 0		"single line"
 		ifTrue:
-			[(lines at: region top) selectFrom: region left to: region right]
-		ifFalse:
-			[(lines at: region top) selectFrom: region left to: cols.
-			 lines from: region top + 1 to: region bottom - 1 do: [:line | line selectFrom: 1 to: cols].
-			 (lines at: region bottom) selectFrom: 1 to: region right].
+			[(lines at: (region at:1) y) selectFrom: (region at:1) x to: (region at:2) x]
+		ifFalse:[
+			(lines at: (region at:1) y) selectFrom: (region at:1) x to: cols.
+			 lines from: (region at:1) y + 1 to: (region at:2) y - 1 do: [:line | line selectFrom: 1 to: cols].
+			 (lines at: (region at: 2) y) selectFrom: 1 to: (region at: 2) x].
 	selectionActive := true.
 	self changed
 ]
@@ -1328,7 +1329,7 @@ TerminalEmulatorMorph >> saveSelection [
 	| stream region |
 	region := self getSelectionRegion.
 	stream := WriteStream on: String new.
-	lines from: region top to: region bottom do: [:line | line appendSelectionTo: stream].
+	lines from: (region at:1) y to: (region at:2) y do: [:line | line appendSelectionTo: stream].
 	selection := stream contents.
 	mouseControlsSelection ifTrue: [Clipboard clipboardText: selection].
 ]
@@ -1446,7 +1447,8 @@ TerminalEmulatorMorph >> selectionPositionAt: screenPosition [
 			 ^(cols + 1) @ (displayStart + rows)].
 	1 to: rows do: [:i
 		| (pos := (self submorphs at: i) selectionColumnAt: screenPosition) isNil
-			ifFalse: [^pos @ (displayStart + i)]].
+			ifFalse: [
+				^pos @ (displayStart + i)]].
 	^nil
 ]
 
