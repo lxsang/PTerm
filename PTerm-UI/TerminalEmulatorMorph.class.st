@@ -761,10 +761,9 @@ TerminalEmulatorMorph >> hideOrShowScrollBar [
 TerminalEmulatorMorph >> hideScrollbar [
 	"Remove the scrollbar from the window."
 
-	scroll notNil
-		ifTrue:
-			[scroll delete.
-			 scroll := nil]
+	scroll ifNil: [ ^self ].
+	scroll delete.
+	scroll := nil
 ]
 
 { #category : #selection }
@@ -844,7 +843,7 @@ TerminalEmulatorMorph >> initTextBounds: textBounds width: nCols height: nRows [
 { #category : #geometry }
 TerminalEmulatorMorph >> initialExtent [
 
-	self flag: #ikp. "can this can go away?"
+	"self flag: #ikp." "can this can go away?"
 	^self preferredExtent
 ]
 
@@ -1026,7 +1025,6 @@ TerminalEmulatorMorph >> keyStroke: evt [
 
 { #category : #events }
 TerminalEmulatorMorph >> keyboardFocusChange: aBoolean [
-	"Transcript show: 'focus changed'; cr."
 	hasFocus := aBoolean
 ]
 
@@ -1256,7 +1254,7 @@ TerminalEmulatorMorph >> preferredExtent [
 TerminalEmulatorMorph >> protectSelection [
 	"If the active position is within the selected region, clear the selection."
 
-	self flag: #ikp. "This is called way too often.  Need to go look where and when it's really necessary."
+	"self flag: #ikp." "This is called way too often.  Need to go look where and when it's really necessary."
 "
 	'protect selection ', (TEMP := TEMP + 1) printString, '  ' displayAt: 10@170.
 "
@@ -1758,11 +1756,12 @@ TerminalEmulatorMorph >> trackSelection: screenPosition [
 	"The mouse moved during selection tracking.  Update the visual representation of the selected region."
 
 	(trackingSelection or: [(self selectionPositionAt: screenPosition) isNil])
-		ifFalse: [self
+		ifFalse: [self trackSelection ]
+	"self
 				startStepping: #trackSelection
 				at: Time millisecondClockValue
 				arguments: #()
-				stepTime: 100]
+				stepTime: 100"
 ]
 
 { #category : #events }

@@ -369,6 +369,12 @@ TerminalEmulator >> extent: aPoint [
 	tty notNil ifTrue: [tty extent: self ttyLayoutBounds extent].
 ]
 
+{ #category : #events }
+TerminalEmulator >> handlesKeyboard: evt [
+	"Answer whether we're interested in keyboard events."
+	^true
+]
+
 { #category : #'initialize-release' }
 TerminalEmulator >> initialize [
 
@@ -376,6 +382,18 @@ TerminalEmulator >> initialize [
 	self setLabel: (windowTitle := iconTitle := 'Terminal').
 	self attachKeymapCategory: #TerminalEmulator targetting: self.
 	self extent: 10@10.
+]
+
+{ #category : #events }
+TerminalEmulator >> keyStroke: evt [
+	self tty keyStroke: evt.
+	evt wasHandled: true.
+]
+
+{ #category : #events }
+TerminalEmulator >> keyboardFocusChange: aBoolean [
+	super keyboardFocusChange: aBoolean.
+	self tty keyboardFocusChange: aBoolean 
 ]
 
 { #category : #'initialize-release' }
