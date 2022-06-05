@@ -29,6 +29,12 @@ LibPTerm class >> O_RDWR [
 ]
 
 { #category : #'C-constants' }
+LibPTerm class >> SIGHUP [
+
+	^ 1
+]
+
+{ #category : #'C-constants' }
 LibPTerm class >> SIGKILL [
 	^ 9
 ]
