@@ -24,6 +24,8 @@ Metacello new
 TerminalEmulator openShell: '/bin/bash'
 ```
 
+**/!\ tip**: by default select text in terminal will copy it, right click will paste te copied text.
+
 ## Fonts and Themes
 ### Fonts
 By default, PTerm automatically downloads and uses 'DejaVu Sans Mono' as the default font, but you can always change the default font by accessing to the terminal window menu as below:
