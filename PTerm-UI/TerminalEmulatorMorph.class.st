@@ -1013,7 +1013,7 @@ TerminalEmulatorMorph >> keyStroke: evt [
 	(evt controlKeyPressed)
 			ifTrue: [
 				(char between: 65 and: 93) ifTrue: [ char := char + 32 ].
-				(char between: 67 and: 125) ifTrue: [ ^ down downcall: char - 96 ]
+				(char between: 97 and: 125) ifTrue: [ ^ down downcall: char - 96 ]
 			] ifFalse:[
 				char == 1 ifTrue: [^down downcallAll:#[27 91 72] ].
 				char == 4 ifTrue: [^down downcallAll:#[27 91 70]  ].
