@@ -185,19 +185,13 @@ TerminalEmulator class >> open [
 ]
 
 { #category : #'instance creation' }
-TerminalEmulator class >> openBash [
-	^self openShell: '/bin/bash'
-	
-]
-
-{ #category : #'instance creation' }
-TerminalEmulator class >> openShell: path [
+TerminalEmulator class >> open: path arguments: arguments [
 	
 	| win term |
+
 	self checkFont.
 	self cleanUpKeyMap.
-	term := (PTerm new xspawn: { path. '-i'} env: self environ ).
-	"term := (PTermEcho new)."
+	term := PTerm new xspawn: { path } , arguments env: self environ.
 	win := self open.
 	term asProtocolStack
 		push: TerminalEmulatorXterm new;
@@ -206,7 +200,20 @@ TerminalEmulator class >> openShell: path [
 		run.
 	win extent: win extent.
 	^ win	
+
+]
+
+{ #category : #'instance creation' }
+TerminalEmulator class >> openBash [
+	^self openShell: '/bin/bash'
 	
+]
+
+{ #category : #'instance creation' }
+TerminalEmulator class >> openShell: path [
+	
+	^ self open: path arguments: #('-i')
+
 ]
 
 { #category : #accessing }
