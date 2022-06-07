@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'master',
 		'pid',
+		'usedFallback',
 		'announcer',
 		'sub',
 		'active',
@@ -19,12 +20,15 @@ PTerm >> announcer [
 
 { #category : #protocol }
 PTerm >> close [
+
 	self master ifNotNil: [
-		self nextPutAllCr: 'exit'.
-		pid ifNotNil: [ 
-			self lib kill: pid signal: self lib class SIGKILL.
-		].
-	]
+		usedFallback ifFalse: [
+			pid ifNotNil: [ 
+				self lib kill: pid signal: self lib class SIGHUP ]
+		] ifTrue: [
+			self nextPutAllCr: 'exit'.
+			pid ifNotNil: [ 
+				self lib kill: pid signal: self lib class SIGKILL ] ] ]
 ]
 
 { #category : #accessing }
@@ -41,7 +45,8 @@ PTerm >> downcall: data [
 PTerm >> initialize [ 
 	announcer := Announcer new.
 	active := false.
-	wbuff := ExternalAddress allocate: 8
+	wbuff := ExternalAddress allocate: 8.
+	usedFallback := false
 ]
 
 { #category : #protocol }
@@ -226,6 +231,7 @@ PTerm >> xspawn: argv env:envs [
 	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	"try to use the external lib if not sucess, fallback to the posix_spawn"
 	[pid := self lib ttySpawn: master argv: xarray   envs: earray ] on: Error do:[
+		usedFallback := true.
 		self spawn: (argv first) args: xarray   env: earray 
 	].
 	active:= true.
