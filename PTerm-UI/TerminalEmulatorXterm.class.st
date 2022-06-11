@@ -213,6 +213,7 @@ TerminalEmulatorXterm >> sgrSingle: arg [
 
 	self trace: 'SGR' with: arg.
 	"ANSI colour codes"
+	arg == 22 ifTrue: [^window setEmphasis: 1 to: 0].
 	arg == 24 ifTrue: [^window setEmphasis: 4 to: 0].
 	arg == 25 ifTrue: [^window setEmphasis: 5 to: 0].
 	arg == 27 ifTrue: [^window setEmphasis: 7 to: 0].
