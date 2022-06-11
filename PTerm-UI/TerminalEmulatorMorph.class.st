@@ -857,7 +857,7 @@ TerminalEmulatorMorph >> initialize: size [
 
 	super initialize.
 	self borderWidth: 2.
-	color := TerminalEmulator palette background at:8.
+	color := TerminalEmulator palette background at: 9.
 	"self borderStyle: (BorderStyle color: Color red width: 2)."
 	inset := 2.
 	trackingSelection := false.
@@ -903,7 +903,7 @@ TerminalEmulatorMorph >> initializeTeletype: size [
 	x := 1.
 	y := 1.
 	fg := 0.
-	bg := 7.
+	bg := 8.
 	em := 0.
 	rv := false.
 	session := nil.
@@ -1295,7 +1295,7 @@ TerminalEmulatorMorph >> resetVideo [
 
 	self
 		clearSelection;
-		setBackground: 7;
+		setBackground: 8;
 		setForeground: 0;
 		setEmphasis: 0
 ]
@@ -1502,7 +1502,7 @@ TerminalEmulatorMorph >> setAutoWrap: aBoolean [
 { #category : #'character writing' }
 TerminalEmulatorMorph >> setBackground: index [
 
-	bg := index min: 7 max: 0.
+	bg := index min: 8 max: 0.
 ]
 
 { #category : #'character writing' }
@@ -1608,7 +1608,7 @@ TerminalEmulatorMorph >> setUpTheme [
 	submorphs do:[:m|
 		m class = TerminalEmulatorLineMorph ifTrue:[m setUpTheme]].
 	submorphs isEmpty ifTrue:[^self].
-	color := TerminalEmulator palette background at:8.
+	color := TerminalEmulator palette background at: 9.
 	self changed
 ]
 
