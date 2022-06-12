@@ -109,6 +109,7 @@ PTerm >> run [
 	sub := self announcer when: PTermDataEvent  do: [ :e|
 		e data do:[:c|
 			up upcall: c codePoint ]].
+	[ self waitForOutput ] forkAt: Processor userSchedulingPriority
 
 ]
 
@@ -228,7 +229,6 @@ PTerm >> xspawn: argv env:envs [
 	xarray ifNotNil: [ xarray := xarray getHandle ].
 	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
-	[ self waitForOutput  ] forkAt: Processor userSchedulingPriority.
 	"try to use the external lib if not sucess, fallback to the posix_spawn"
 	[pid := self lib ttySpawn: master argv: xarray   envs: earray ] on: Error do:[
 		usedFallback := true.
