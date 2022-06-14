@@ -416,8 +416,8 @@ TerminalEmulator >> openOn: ttyMorph [
 	"Figure out what our extent should be based on how much extra space we use for decoration."
 	ext := tty preferredExtent						"the extent that the tty would like to receive"
 		+ self extent - self ttyLayoutBounds extent.	"window decoration"
-	self activeHand keyboardFocus: nil.			"make sure we get focus when we're opened"
-	self extent: ext; openInWorldExtent: ext.
+	self currentWorld activeHand keyboardFocus: nil.			"make sure we get focus when we're opened"
+	self extent: ext; openInWorld.
 	tty install; run
 ]
 
