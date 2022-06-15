@@ -111,7 +111,7 @@ TerminalEmulator class >> fontFamily [
 { #category : #font }
 TerminalEmulator class >> fontsDir [
 	|path|
-	path := FileLocator localDirectory absolutePath / 'Fonts'.
+	path := FileLocator localDirectory / 'Fonts'.
 	path exists ifFalse:[ path createDirectory  ].
 	^path
 ]
