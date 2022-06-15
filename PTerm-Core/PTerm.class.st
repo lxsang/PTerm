@@ -192,14 +192,13 @@ PTerm >> waitForOutput [
 	buff := self lib getReadWriteBufferOf: 2048.
 	[ 
 		count := self lib read: self master buffer: buff  size: 2048.
-		count > 0 ifTrue:[
-			data :=  (FFIExternalArray fromHandle: buff type: 'uint8' size: count) asByteArray.
-			stream nextPutAll: data.
+		count > 0 ifTrue:[ 
+			stream nextPutAll: (FFIExternalArray fromHandle: buff type: 'uint8' size: count) asByteArray.
 			[
-				data := stream contents decodeWith: #utf8.
+				data := PTermUTF8Encoder new decodeBytes:  stream contents.
 				self announcer announce: (PTermDataEvent data: data ).
-				stream reset.
-			] on:Error do:[].
+				stream reset
+			] on:Error do:[:e| stream reset]
 		].
 		self pid ifNotNil: [ 
 			ws := self lib waitpid: self pid status: status noHang: 1
