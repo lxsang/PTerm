@@ -188,17 +188,15 @@ PTerm >> waitForOutput [
 	ws := 0.
 	self master ifNil: [ ^self ].
 	status := FFIUInt32  newBuffer.
-	stream := WriteStream on: ByteArray new.
+	data := #[].
 	buff := self lib getReadWriteBufferOf: 2048.
 	[ 
 		count := self lib read: self master buffer: buff  size: 2048.
 		count > 0 ifTrue:[ 
-			stream nextPutAll: (FFIExternalArray fromHandle: buff type: 'uint8' size: count) asByteArray.
-			[
-				data := PTermUTF8Encoder new decodeBytes:  stream contents.
-				self announcer announce: (PTermDataEvent data: data ).
-				stream reset
-			] on:Error do:[:e| stream reset]
+			data := data , (FFIExternalArray fromHandle: buff type: 'uint8' size: count) asByteArray.
+			stream := data readStream.
+			self announcer announce: (PTermDataEvent data: (PTermUTF8Encoder new decodeStreamUpToIncomplete: stream)).
+			data := data copyFrom: stream position + 1 to: data size.
 		].
 		self pid ifNotNil: [ 
 			ws := self lib waitpid: self pid status: status noHang: 1
