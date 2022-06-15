@@ -78,7 +78,7 @@ LibPTerm class >> compile [
 { #category : #compilation }
 LibPTerm class >> mksource [
 	|file stream|
-	file := ('./' asFileReference absolutePath / 'libpterm.c') asFileReference.
+	file := (FileLocator localDirectory absolutePath / 'libpterm.c') asFileReference.
 	file exists ifTrue:[ file delete ].
 	stream := file writeStream.
 	stream nextPutAll: self source.
@@ -249,7 +249,7 @@ LibPTerm >> master [
 
 { #category : #'accessing platform' }
 LibPTerm >> moduleName [
-	^ (('./' asFileReference absolutePath) / 'libpterm.flib') asFileReference pathString
+	^ (FileLocator localDirectory absolutePath / 'libpterm.flib') asFileReference pathString
 ]
 
 { #category : #lib }
