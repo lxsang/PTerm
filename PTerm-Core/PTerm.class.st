@@ -211,7 +211,7 @@ PTerm >> waitForOutput [
 	self announcer unsubscribe: sub.
 	master := nil.
 	up note: #endpointClosed with: true.
-	wbuff free.
+	wbuff isNull ifFalse: [ wbuff free; beNull ].
 	Transcript  show: 'Terminal closed'; cr.
 ]
 
