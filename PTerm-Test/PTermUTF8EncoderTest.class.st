@@ -32,12 +32,24 @@ PTermUTF8EncoderTest >> testDecodeStreamUpToIncomplete [
 	self assertDecodingOf: #[16r41]
 		equals: 'A'
 		leavingNumberOfBytes: 0.
-	self assertDecodingOf: #[16rC2]
-		equals: ''
-		leavingNumberOfBytes: 1.
+	self assertDecodingOf: #[16rC2 16rB1]
+		equals: '±'
+		leavingNumberOfBytes: 0.
+	self assertDecodingOf: #[16rC2 16rB1 16rE2 16r81]
+		equals: '±'
+		leavingNumberOfBytes: 2.
+	self assertDecodingOf: #[16rC2 16rB1 16rE2 16r81 16r89 16rF0 16r9F 16r8C]
+		equals: '±⁉'
+		leavingNumberOfBytes: 3.
+	self assertDecodingOf: #[16rC2 16rB1 16rE2 16r81 16r89 16rF0 16r9F 16r8C 16r90]
+		equals: '±⁉' , (String with: (Character codePoint: 16r1F310))
+		leavingNumberOfBytes: 0.
 	self assertDecodingOf: #[16rF4 16r90 16r80 16r80]
 		equals: (String with: replacement)
 		leavingNumberOfBytes: 0.
+	self assertDecodingOf: #[16rC2]
+		equals: ''
+		leavingNumberOfBytes: 1.
 	"Example on p. 125 of the Unicode v14.0 Core Specification:"
 	self assertDecodingOf: #[16rC2 16r41 16r42]
 		equals: (String with: replacement with: $A with: $B)
