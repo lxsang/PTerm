@@ -5,31 +5,31 @@ Class {
 }
 
 { #category : #convenience }
-PTermUTF8Encoder >> decodeStreamUpToIncomplete: byteStream [
-
-	^ self decodeStreamUpToIncomplete: byteStream replacementCharacter: (Character codePoint: 16rFFFD)
+PTermUTF8Encoder >> decodeNextFrom: byteStream to: characterStream [
+	|decodedChar position|
+	byteStream atEnd ifTrue: [ ^false ].
+	position := byteStream position.
+	decodedChar := [ 
+		self nextFromStream: byteStream
+	] on: Error do: [ :e|
+		e isResumable ifFalse: [
+			byteStream position: position.
+			^false
+		].
+		e class = PTInvalidUTF8IllegalContinuationByte ifTrue:[byteStream back].
+		Character codePoint: e defaultResumeValue
+	].
+	characterStream nextPut: decodedChar.
+	^true 
 
 ]
 
 { #category : #convenience }
-PTermUTF8Encoder >> decodeStreamUpToIncomplete: byteStream replacementCharacter: replacementCharacter [
+PTermUTF8Encoder >> decodeStreamUpToIncomplete: byteStream [
 
 	^ String streamContents: [ :characterStream |
-		| position |
-		[
-			[ byteStream atEnd ] whileFalse: [
-				| character |
-				position := byteStream position.
-				character := [ [ self nextFromStream: byteStream ]
-					on: PTInvalidUTF8IllegalLeadingByte , PTInvalidUTF8Overlong , PTInvalidUTF8OutsideRange do: [
-						replacementCharacter ] ]
-					on: PTInvalidUTF8IllegalContinuationByte do: [
-						byteStream back.
-						replacementCharacter ].
-				characterStream nextPut: character ]
-		] on: ZnIncomplete do: [
-			byteStream position: position ] ]
-
+			[self decodeNextFrom: byteStream to: characterStream] whileTrue
+	  ]
 ]
 
 { #category : #'error handling' }
@@ -43,6 +43,12 @@ PTermUTF8Encoder >> errorIllegalContinuationByte [
 PTermUTF8Encoder >> errorIllegalLeadingByte [
 
 	^ PTInvalidUTF8IllegalLeadingByte signal
+
+]
+
+{ #category : #'error handling' }
+PTermUTF8Encoder >> errorIncomplete [
+	^ PTIncompleteUTF8 signal
 
 ]
 

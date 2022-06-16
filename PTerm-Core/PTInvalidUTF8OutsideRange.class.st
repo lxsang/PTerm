@@ -1,5 +1,5 @@
 Class {
 	#name : #PTInvalidUTF8OutsideRange,
-	#superclass : #ZnInvalidUTF8,
+	#superclass : #PTInvalidUTF8,
 	#category : #'PTerm-Core'
 }
