@@ -485,12 +485,12 @@ TerminalEmulator >> setWindowTitle: aString [
 TerminalEmulator >> simulateShortcutAsKeyStroke: comb [
 	|evt|
 	evt := KeyboardEvent new 
-				setType: #keystroke 
+				setType: #keyDown 
 				buttons: comb modifier eventCode
 				position: 0@0 
 				keyValue: comb key asciiValue + 1 - $a asciiValue
 				charCode: comb key asciiValue
-				hand: ActiveHand 
+				hand: ActiveWorld activeHand  
 				stamp: 0.
 	tty keyStroke: evt
 ]

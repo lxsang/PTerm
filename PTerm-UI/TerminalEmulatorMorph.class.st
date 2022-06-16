@@ -860,7 +860,7 @@ TerminalEmulatorMorph >> initialize: size [
 	color := TerminalEmulator palette background at:8.
 	"self borderStyle: (BorderStyle color: Color red width: 2)."
 	inset := 2.
-	trackingSelection := false.
+	trackingSelection := true.
 	self
 		initializeTeletype: size;
 		initializeContent;
@@ -992,41 +992,17 @@ TerminalEmulatorMorph >> isConnected [
 ]
 
 { #category : #events }
+TerminalEmulatorMorph >> keyDown: evt [
+	(evt commandKeyPressed | evt controlKeyPressed ) ifTrue:[^self processKeyEvent: evt].
+	evt shiftPressed ifTrue: [ ^self].
+	evt keyValue < 32 ifTrue:[
+		self processKeyEvent: evt
+	].
+]
+
+{ #category : #events }
 TerminalEmulatorMorph >> keyStroke: evt [
-	"Receive a character from the keyboard."
-	| char |
-	scrollOnInput ifTrue: [self pageEnd].
-	char := evt keyValue "keyCharacter asciiValue".
-	evt shiftPressed 
-		ifTrue:
-			[char == 1 ifTrue: [^self pageHome].
-			 char == 4 ifTrue: [^self pageEnd].
-			 char == 11 ifTrue: [^self pageUp: rows // 2].
-			 char == 12 ifTrue: [^self pageDown: rows // 2]].
-	"support both CMD + V/C and CTRL + SHIFT + V/C"
-	(keyboardControlsSelection &
-		((evt commandKeyPressed) | ( (evt controlKeyPressed) & (evt shiftPressed) ) ))
-		ifTrue:
-			[evt keyCharacter asLowercase = $c ifTrue: [^self copySelection].
-			 evt keyCharacter asLowercase = $v ifTrue: [^self sendSelection]].
-	"Handle VT100 control key"
-	(evt controlKeyPressed)
-			ifTrue: [
-				(char between: 65 and: 93) ifTrue: [ char := char + 32 ].
-				(char between: 97 and: 125) ifTrue: [ ^ down downcall: char - 96 ]
-			] ifFalse:[
-				char == 1 ifTrue: [^down downcallAll:#[27 91 72] ].
-				char == 4 ifTrue: [^down downcallAll:#[27 91 70]  ].
-				char == 11 ifTrue: [^down downcallAll:#[27 91 53 126] ].
-				char == 12 ifTrue: [^down downcallAll: #[27 91 54 126]]
-			].
-	(metaSendsEscape and: [evt commandKeyPressed ])
-		ifTrue: [down downcall: Character escape asciiValue].
-	"Cursor keys clash with control keys: differentiate by sending 128+cursorKeyCode."
-	(char == 8 & deleteIsDel and: [evt controlKeyPressed not]) ifTrue: [char := 127].
-	(char < 32 and: [evt controlKeyPressed not]) ifTrue: [char := char + 128].
-	down downcall: char.
-	evt wasHandled: true.
+	self processKeyEvent: evt
 ]
 
 { #category : #events }
@@ -1141,8 +1117,7 @@ TerminalEmulatorMorph >> mouseDown: evt [
 { #category : #events }
 TerminalEmulatorMorph >> mouseEnter: evt [
 	"The pointer just entered the window."
-
-	TextCursor beCursor.
+	self currentHand showTemporaryCursor: TextCursor.
 	self showScrollbar.
 	super mouseEnter: evt
 ]
@@ -1150,8 +1125,7 @@ TerminalEmulatorMorph >> mouseEnter: evt [
 { #category : #events }
 TerminalEmulatorMorph >> mouseLeave: evt [
 	"The cursor just left the window."
-
-	Cursor normal show.
+	self currentHand showTemporaryCursor: nil.
 	"self hideScrollbar."
 	super mouseLeave: evt
 ]
@@ -1254,6 +1228,44 @@ TerminalEmulatorMorph >> preferredExtent [
 	w := self borderWidth + s + inset + (cols * pitch) + inset + self borderWidth.
 	h := self borderWidth + inset + (rows * skip) + inset + self borderWidth.
 	^w@h
+]
+
+{ #category : #events }
+TerminalEmulatorMorph >> processKeyEvent: evt [
+	"Receive a character from the keyboard."
+	| char |
+	scrollOnInput ifTrue: [self pageEnd].
+	char := evt keyValue "keyCharacter asciiValue".
+	evt shiftPressed 
+		ifTrue:
+			[char == 1 ifTrue: [^self pageHome].
+			 char == 4 ifTrue: [^self pageEnd].
+			 char == 11 ifTrue: [^self pageUp: rows // 2].
+			 char == 12 ifTrue: [^self pageDown: rows // 2]].
+	"support both CMD + V/C and CTRL + SHIFT + V/C"
+	(keyboardControlsSelection &
+		((evt commandKeyPressed) | ( (evt controlKeyPressed) & (evt shiftPressed) ) ))
+		ifTrue:
+			[evt keyCharacter asLowercase = $c ifTrue: [^self copySelection].
+			 evt keyCharacter asLowercase = $v ifTrue: [^self sendSelection]].
+	"Handle VT100 control key"
+	(evt controlKeyPressed)
+			ifTrue: [
+				(char between: 65 and: 93) ifTrue: [ char := char + 32 ].
+				(char between: 97 and: 125) ifTrue: [ ^ down downcall: char - 96 ]
+			] ifFalse:[
+				char == 1 ifTrue: [^down downcallAll:#[27 91 72] ].
+				char == 4 ifTrue: [^down downcallAll:#[27 91 70]  ].
+				char == 11 ifTrue: [^down downcallAll:#[27 91 53 126] ].
+				char == 12 ifTrue: [^down downcallAll: #[27 91 54 126]]
+			].
+	(metaSendsEscape and: [evt commandKeyPressed ])
+		ifTrue: [down downcall: Character escape asciiValue].
+	"Cursor keys clash with control keys: differentiate by sending 128+cursorKeyCode."
+	(char == 8 & deleteIsDel and: [evt controlKeyPressed not]) ifTrue: [char := 127].
+	(char < 32 and: [evt controlKeyPressed not]) ifTrue: [char := char + 128].
+	down downcall: char.
+	evt wasHandled: true.
 ]
 
 { #category : #private }
@@ -1450,8 +1462,8 @@ TerminalEmulatorMorph >> selectionPositionAt: screenPosition [
 			[self pageDown: (rows // 8 max: 1).
 			 ^(cols + 1) @ (displayStart + rows)].
 	1 to: rows do: [:i
-		| (pos := (self submorphs at: i) selectionColumnAt: screenPosition) isNil
-			ifFalse: [
+		| (pos := (self submorphs at: i) selectionColumnAt: screenPosition)
+			ifNotNil: [
 				^pos @ (displayStart + i)]].
 	^nil
 ]
@@ -1682,24 +1694,23 @@ TerminalEmulatorMorph >> startSelection: screenPosition [
 	self hideCursor; changed.
 	mousePosition = screenPosition
 		ifTrue:
-			[^selectionEnd isNil
-				ifTrue: [self selectWord: screenPosition]
-				ifFalse: [self selectLine: screenPosition]].
-"
-	'mouse position ' , mousePosition printString,
+			[^selectionEnd
+				ifNil:  [self selectWord: screenPosition]
+				ifNotNil: [self selectLine: screenPosition]].
+
+	"'mouse position ' , mousePosition printString,
 	' screen position ', screenPosition printString, 
 	' selectionEnd ', selectionEnd printString, 
-	'  ' displayAt: 10@150.
-"
+	'  ' displayAt: 10@150."
 	mousePosition := screenPosition.
 	selectionEnd := nil.
 
 	start := self selectionPositionAt: screenPosition.
 	self clearSelection.
 	selectionStart := start.
-"
-	'selection begin ', selectionStart printString, '     ' displayAt: 10@10
-"
+
+	"'selection begin ', selectionStart printString, '     ' displayAt: 10@10"
+
 ]
 
 { #category : #private }
@@ -1751,8 +1762,7 @@ TerminalEmulatorMorph >> trackSelection [
 	"The mouse is down during selection tracking.  Update the visual representation of the selected region."
 
 	| pos |
-	(pos := self selectionPositionAt: Sensor cursorPoint) isNil
-		ifFalse:
+	(pos := self selectionPositionAt: Sensor cursorPoint) ifNotNil:
 			[selectionEnd := pos.
 			 self highlightSelection]
 ]
@@ -1760,9 +1770,12 @@ TerminalEmulatorMorph >> trackSelection [
 { #category : #selection }
 TerminalEmulatorMorph >> trackSelection: screenPosition [
 	"The mouse moved during selection tracking.  Update the visual representation of the selected region."
-
 	(trackingSelection or: [(self selectionPositionAt: screenPosition) isNil])
 		ifFalse: [self trackSelection ]
+		ifTrue:[
+			selectionEnd := (self selectionPositionAt: screenPosition).
+			self highlightSelection	
+		].
 	"self
 				startStepping: #trackSelection
 				at: Time millisecondClockValue
