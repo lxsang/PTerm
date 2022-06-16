@@ -11,7 +11,7 @@ PTermUTF8Encoder >> decodeNextFrom: byteStream to: characterStream [
 	position := byteStream position.
 	decodedChar := [ 
 		self nextFromStream: byteStream
-	] on: Error do: [ :e|
+	] on: PTInvalidUTF8, PTIncompleteUTF8 do: [ :e|
 		e isResumable ifFalse: [
 			byteStream position: position.
 			^false
