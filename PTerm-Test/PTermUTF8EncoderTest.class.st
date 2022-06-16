@@ -33,6 +33,9 @@ PTermUTF8EncoderTest >> testDecodeStreamUpToIncomplete [
 	self assertDecodingOf: #[16rC2]
 		equals: ''
 		leavingNumberOfBytes: 1.
+	self assertDecodingOf: #[16rF4 16r90 16r80 16r80]
+		equals: (String with: replacement)
+		leavingNumberOfBytes: 0.
 	self assertDecodingOf: #[16rC2 16r41 16r42]
 		equals: (String with: replacement with: $A with: $B)
 		leavingNumberOfBytes: 0.
