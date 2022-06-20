@@ -65,3 +65,14 @@ PTermUTF8Encoder >> errorOverlong [
 	^ PTInvalidUTF8Overlong signal
 
 ]
+
+{ #category : #converting }
+PTermUTF8Encoder >> nextCodePointFromStream: stream [
+
+	| codePoint |
+
+	codePoint := super nextCodePointFromStream: stream.
+	codePoint <= self maximumUTFCode ifFalse: [ ^ self errorOutsideRange ].
+	^ codePoint
+
+]
