@@ -248,7 +248,7 @@ TerminalEmulatorTextState >> initialize: aString [
 	string := aString.
 	stringSize := string size.
 	fgRuns := Array new: stringSize withAll: 0.
-	bgRuns := Array new: stringSize withAll: 7.
+	bgRuns := Array new: stringSize withAll: 8.
 	emRuns := Array new: stringSize withAll: 0.
 	cursorCol := 0.
 	changed := true.	"want initial display"
@@ -311,7 +311,7 @@ TerminalEmulatorTextState >> setWidth: width [
 	string size < width
 		ifTrue: [self string: (string forceTo: width paddingWith: $ )]
 		ifFalse: [string size > width
-			ifTrue: [self from: width + 1 to: string size  put: $  fg: 0 bg: 7 em: 0]].
+			ifTrue: [self from: width + 1 to: string size  put: $  fg: 0 bg: 8 em: 0]].
 	stringSize := width.
 	self findLastColumn.
 ]
@@ -338,11 +338,11 @@ TerminalEmulatorTextState >> string: aString [
 	oldSize < newSize
 		ifTrue:
 			[fgRuns := fgRuns forceTo: newSize paddingWith: 0.
-			 bgRuns := bgRuns forceTo: newSize paddingWith: 7.
+			 bgRuns := bgRuns forceTo: newSize paddingWith: 8.
 			 emRuns := emRuns forceTo: newSize paddingWith: 0]
 		ifFalse:
 			[fgRuns from: newSize + 1 to: oldSize put: 0.
-			 bgRuns from: newSize + 1 to: oldSize put: 7.
+			 bgRuns from: newSize + 1 to: oldSize put: 8.
 			 emRuns from: newSize + 1 to: oldSize put: 0].
 	cursorCol := cursorCol min: newSize.
 	stringSize := newSize.

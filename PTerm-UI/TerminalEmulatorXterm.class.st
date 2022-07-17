@@ -220,7 +220,7 @@ TerminalEmulatorXterm >> sgrSingle: arg [
 	(arg >= 30 and: [arg <= 37]) ifTrue: [^window setForeground: arg - 30].
 	arg == 39 ifTrue: [^window setForeground: 0].
 	(arg >= 40 and: [arg <= 47]) ifTrue: [^window setBackground: arg - 40].
-	arg == 49 ifTrue: [^window setBackground: 7].
+	arg == 49 ifTrue: [^window setBackground: 8].
 	super sgrSingle: arg
 ]
 
