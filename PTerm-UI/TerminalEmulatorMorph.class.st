@@ -993,7 +993,9 @@ TerminalEmulatorMorph >> isConnected [
 
 { #category : #events }
 TerminalEmulatorMorph >> keyDown: evt [
-	(evt commandKeyPressed | evt controlKeyPressed ) ifTrue:[^self processKeyEvent: evt].
+	evt commandKeyPressed ifTrue:[^self processKeyEvent: evt].
+	evt controlKeyPressed ifTrue: [
+		^ (evt keyValue = 0) ifTrue: [ self ] ifFalse: [ self processKeyEvent: evt ] ].
 	evt shiftPressed ifTrue: [ ^self].
 	evt keyValue < 32 ifTrue:[
 		self processKeyEvent: evt
