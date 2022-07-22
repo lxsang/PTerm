@@ -1739,6 +1739,13 @@ TerminalEmulatorMorph >> tab [
 	self showCursor
 ]
 
+{ #category : #events }
+TerminalEmulatorMorph >> takesKeyboardFocus [
+
+	^ true
+
+]
+
 { #category : #geometry }
 TerminalEmulatorMorph >> textBounds [
 	"Answer just the bounds of the text -- excluding border, scroll and inset."
