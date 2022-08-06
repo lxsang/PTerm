@@ -298,6 +298,7 @@ TerminalEmulator class >> useUnifont [
 { #category : #'world menu' }
 TerminalEmulator class >> windowMenuOn: aBuilder [
 	<windowMenu>
+	aBuilder model class = self ifFalse:[^self].
 	"super windowMenuOn: aBuilder."
 	(aBuilder item: #'Change PTerm default font')
 		order: 2.4;
