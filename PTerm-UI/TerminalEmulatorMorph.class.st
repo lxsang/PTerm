@@ -860,7 +860,7 @@ TerminalEmulatorMorph >> initialize: size [
 	color := TerminalEmulator palette background at: 9.
 	"self borderStyle: (BorderStyle color: Color red width: 2)."
 	inset := 2.
-	trackingSelection := false.
+	trackingSelection := true.
 	self
 		initializeTeletype: size;
 		initializeContent;
@@ -992,6 +992,17 @@ TerminalEmulatorMorph >> isConnected [
 ]
 
 { #category : #events }
+TerminalEmulatorMorph >> keyDown: evt [
+	evt commandKeyPressed ifTrue:[^self processKeyEvent: evt].
+	evt controlKeyPressed ifTrue: [
+		^ (evt keyValue = 0) ifTrue: [ self ] ifFalse: [ self processKeyEvent: evt ] ].
+	evt shiftPressed ifTrue: [ ^self].
+	evt keyValue < 32 ifTrue:[
+		self processKeyEvent: evt
+	].
+]
+
+{ #category : #events }
 TerminalEmulatorMorph >> keyStroke: evt [
 	self processKeyEvent: evt
 ]
@@ -1108,8 +1119,7 @@ TerminalEmulatorMorph >> mouseDown: evt [
 { #category : #events }
 TerminalEmulatorMorph >> mouseEnter: evt [
 	"The pointer just entered the window."
-
-	TextCursor beCursor.
+	self currentHand showTemporaryCursor: TextCursor.
 	self showScrollbar.
 	super mouseEnter: evt
 ]
@@ -1117,8 +1127,7 @@ TerminalEmulatorMorph >> mouseEnter: evt [
 { #category : #events }
 TerminalEmulatorMorph >> mouseLeave: evt [
 	"The cursor just left the window."
-
-	Cursor normal show.
+	self currentHand showTemporaryCursor: nil.
 	"self hideScrollbar."
 	super mouseLeave: evt
 ]
@@ -1456,8 +1465,8 @@ TerminalEmulatorMorph >> selectionPositionAt: screenPosition [
 			[self pageDown: (rows // 8 max: 1).
 			 ^(cols + 1) @ (displayStart + rows)].
 	1 to: rows do: [:i
-		| (pos := (self submorphs at: i) selectionColumnAt: screenPosition) isNil
-			ifFalse: [
+		| (pos := (self submorphs at: i) selectionColumnAt: screenPosition)
+			ifNotNil: [
 				^pos @ (displayStart + i)]].
 	^nil
 ]
@@ -1688,24 +1697,23 @@ TerminalEmulatorMorph >> startSelection: screenPosition [
 	self hideCursor; changed.
 	mousePosition = screenPosition
 		ifTrue:
-			[^selectionEnd isNil
-				ifTrue: [self selectWord: screenPosition]
-				ifFalse: [self selectLine: screenPosition]].
-"
-	'mouse position ' , mousePosition printString,
+			[^selectionEnd
+				ifNil:  [self selectWord: screenPosition]
+				ifNotNil: [self selectLine: screenPosition]].
+
+	"'mouse position ' , mousePosition printString,
 	' screen position ', screenPosition printString, 
 	' selectionEnd ', selectionEnd printString, 
-	'  ' displayAt: 10@150.
-"
+	'  ' displayAt: 10@150."
 	mousePosition := screenPosition.
 	selectionEnd := nil.
 
 	start := self selectionPositionAt: screenPosition.
 	self clearSelection.
 	selectionStart := start.
-"
-	'selection begin ', selectionStart printString, '     ' displayAt: 10@10
-"
+
+	"'selection begin ', selectionStart printString, '     ' displayAt: 10@10"
+
 ]
 
 { #category : #private }
@@ -1734,6 +1742,13 @@ TerminalEmulatorMorph >> tab [
 	self showCursor
 ]
 
+{ #category : #events }
+TerminalEmulatorMorph >> takesKeyboardFocus [
+
+	^ true
+
+]
+
 { #category : #geometry }
 TerminalEmulatorMorph >> textBounds [
 	"Answer just the bounds of the text -- excluding border, scroll and inset."
@@ -1757,8 +1772,7 @@ TerminalEmulatorMorph >> trackSelection [
 	"The mouse is down during selection tracking.  Update the visual representation of the selected region."
 
 	| pos |
-	(pos := self selectionPositionAt: Sensor cursorPoint) isNil
-		ifFalse:
+	(pos := self selectionPositionAt: Sensor cursorPoint) ifNotNil:
 			[selectionEnd := pos.
 			 self highlightSelection]
 ]
@@ -1766,9 +1780,12 @@ TerminalEmulatorMorph >> trackSelection [
 { #category : #selection }
 TerminalEmulatorMorph >> trackSelection: screenPosition [
 	"The mouse moved during selection tracking.  Update the visual representation of the selected region."
-
 	(trackingSelection or: [(self selectionPositionAt: screenPosition) isNil])
 		ifFalse: [self trackSelection ]
+		ifTrue:[
+			selectionEnd := (self selectionPositionAt: screenPosition).
+			self highlightSelection	
+		].
 	"self
 				startStepping: #trackSelection
 				at: Time millisecondClockValue
