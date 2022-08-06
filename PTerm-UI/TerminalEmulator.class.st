@@ -15,7 +15,8 @@ Class {
 	#instVars : [
 		'tty',
 		'windowTitle',
-		'iconTitle'
+		'iconTitle',
+		'workingDirectory'
 	],
 	#classVars : [
 		'AutoClose',
@@ -332,6 +333,19 @@ TerminalEmulator class >> windowMenuOn: aBuilder [
 		order: 2.6;
 		action: [ self selectTheme];
 		withSeparatorAfter.
+	(aBuilder item: #'Browse working directory')
+		order: 9;
+		enabled: #hasWorkingDirectory;
+		action: #browseWorkingDirectory.
+	(aBuilder item: #'Inspect working directory')
+		enabled: #hasWorkingDirectory;
+		action: #inspectWorkingDirectory.
+]
+
+{ #category : #'menus-window' }
+TerminalEmulator >> browseWorkingDirectory [
+
+	FileList openOn: workingDirectory
 ]
 
 { #category : #connections }
@@ -404,6 +418,12 @@ TerminalEmulator >> handlesKeyboard: evt [
 	^true
 ]
 
+{ #category : #'menus-window' }
+TerminalEmulator >> hasWorkingDirectory [
+
+	^ workingDirectory notNil
+]
+
 { #category : #'initialize-release' }
 TerminalEmulator >> initialize [
 
@@ -411,6 +431,12 @@ TerminalEmulator >> initialize [
 	self setLabel: (windowTitle := iconTitle := 'Terminal').
 	self attachKeymapCategory: #TerminalEmulator targetting: self.
 	self extent: 10@10.
+]
+
+{ #category : #'menus-window' }
+TerminalEmulator >> inspectWorkingDirectory [
+
+	workingDirectory inspect
 ]
 
 { #category : #events }
@@ -501,6 +527,15 @@ TerminalEmulator >> setWindowTitle: aString [
 
 	windowTitle := aString.
 	self isCollapsed ifFalse: [self setLabel: aString].
+]
+
+{ #category : #accessing }
+TerminalEmulator >> setWorkingDirectory: fileURLString [
+
+	| fileURL |
+
+	fileURL := [ ZnUrl fromString: fileURLString ] on: Error do: [ :error | nil ].
+	workingDirectory := fileURL ifNotNil: [ fileURL asFileReference ].
 ]
 
 { #category : #events }

@@ -1662,6 +1662,15 @@ TerminalEmulatorMorph >> setWindowTitle: aString [
 				ifFalse: [systemWindow setLabel: aString]]
 ]
 
+{ #category : #'operating modes' }
+TerminalEmulatorMorph >> setWorkingDirectory: fileURLString [
+
+	systemWindow notNil
+		ifTrue:
+			[(systemWindow isKindOf: TerminalEmulator)
+				ifTrue: [systemWindow setWorkingDirectory: fileURLString]]
+]
+
 { #category : #'cursor control' }
 TerminalEmulatorMorph >> showCursor [
 
