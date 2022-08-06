@@ -297,7 +297,7 @@ TerminalEmulator class >> useUnifont [
 
 { #category : #'world menu' }
 TerminalEmulator class >> windowMenuOn: aBuilder [
-	<windowMenuTerminal>
+	<windowMenu>
 	"super windowMenuOn: aBuilder."
 	(aBuilder item: #'Change PTerm default font')
 		order: 2.4;
@@ -401,12 +401,6 @@ TerminalEmulator >> keyStroke: evt [
 TerminalEmulator >> keyboardFocusChange: aBoolean [
 	super keyboardFocusChange: aBoolean.
 	self tty keyboardFocusChange: aBoolean 
-]
-
-{ #category : #'menu building' }
-TerminalEmulator >> menuBuilder [
-
-	^ menuBuilder ifNil: [ menuBuilder := PragmaMenuBuilder withAllPragmaKeywords: { 'windowMenuTerminal'. self discoveredMenuPragmaKeyword } model: self ]
 ]
 
 { #category : #'initialize-release' }
