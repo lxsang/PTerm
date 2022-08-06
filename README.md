@@ -10,14 +10,16 @@ Require libc compliant with the host pharo VM (32 or 64 bits) to be installed.
 
 ## Install
 
-Install on pharo 9
+Install on pharo 9 or 10
 
 ```smalltalk
 Metacello new
-	repository: 'github://lxsang/PTerm:pharo9';
+	repository: 'github://lxsang/PTerm';
 	baseline:'PTerm';
 	load
 ```
+
+Support for older version (Pharo 7) on [this branch](https://github.com/lxsang/PTerm/tree/pharo7-stable)
 
 ## Usage
 ```Smalltalk
