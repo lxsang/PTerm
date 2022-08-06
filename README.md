@@ -14,7 +14,7 @@ Install on pharo 7
 
 ```smalltalk
 Metacello new
-	repository: 'github://lxsang/PTerm';
+	repository: 'github://lxsang/PTerm:pharo7-stable';
 	baseline:'PTerm';
 	load
 ```
