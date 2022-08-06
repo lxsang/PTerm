@@ -236,16 +236,30 @@ TerminalEmulator class >> selecFont [
 	FreeTypeFontProvider current updateAvailableFontFamilies.
 	FreeTypeFontProvider current updateFromSystem.
 	FreeTypeFontProvider current updateAvailableFontFamilies.
-	fontSelector := FreeTypeFontSelectorDialogWindow new.
-	fontSelector selectedFont: font.
-	UITheme builder openModal: fontSelector.
-	fontSelector cancelled ifFalse:[
-		font := fontSelector selectedFont.
-		self announcer announce: (TerminalEmulatorConfigChange data: font).
+	[
+		"The code inside this block provide support only for Pharo9.
+		From Pharo10, FreeTypeFontSelectorDialogWindow no longer exist"
+		fontSelector := FreeTypeFontSelectorDialogWindow new.
+		fontSelector selectedFont: font.
+		fontSelector openModal.
+		fontSelector cancelled ifFalse:[
+			self setFont: fontSelector selectedFont
+		]
+	] on:Error do:[
+		"Use FontChooser for pharo10 and up.
+		FontChooser exists on Pharo9, but the class interface is completely different
+		from Pharo10. It is impossible to have a compatible use of this class for both
+		Pharo9 and Pharo10"
+		self selectFontUsingFontChooser
 	].
-	"trigger font change"
-	^ font familyName
 	
+]
+
+{ #category : #font }
+TerminalEmulator class >> selectFontUsingFontChooser [
+	FontChooser openWithTitle: 'Please select terminal font'
+		initialFont: font
+		onAcceptDo: [ :aFont | self setFont: aFont ]
 ]
 
 { #category : #theme }
@@ -263,6 +277,13 @@ TerminalEmulator class >> selectTheme [
 	selected ifNil:[^self].
 	palette := selected.
 	self announcer announce: (TerminalEmulatorConfigChange data:palette)
+]
+
+{ #category : #font }
+TerminalEmulator class >> setFont: aFont [
+	font := aFont.
+	self announcer announce: (TerminalEmulatorConfigChange data: font).
+	
 ]
 
 { #category : #font }
