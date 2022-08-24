@@ -9,7 +9,6 @@ BaselineOfPTerm >> baseline: spec [
 	<baseline>
 spec for: #common do: [ 
 	"spec preLoadDoIt: #preload."
-	spec postLoadDoIt: #checkFont.
 	spec
 		package: 'PTerm-Core' with:  [ spec requires: #('PTerm-Protocol') ];
 		package: 'PTerm-Test';
@@ -19,9 +18,3 @@ spec for: #common do: [
 ]
 ]
 
-{ #category : #baselines }
-BaselineOfPTerm >> checkFont [
-	FreeTypeFontProvider current prepareForUpdating.
-	FreeTypeFontProvider current updateAvailableFontFamilies.
-	TerminalEmulator checkFont
-]
