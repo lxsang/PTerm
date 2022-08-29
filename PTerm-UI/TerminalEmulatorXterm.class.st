@@ -198,7 +198,7 @@ TerminalEmulatorXterm >> saveBuffer [
 	"Save a copy of the current state of the tty."
 
 	savedBuffer := window bufferState.
-	window setEmacsColours: true
+	"window setEmacsColours: true"
 ]
 
 { #category : #private }
