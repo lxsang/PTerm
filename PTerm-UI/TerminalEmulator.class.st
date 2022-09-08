@@ -342,8 +342,7 @@ TerminalEmulator class >> windowMenuOn: aBuilder [
 
 { #category : #'menus-window' }
 TerminalEmulator >> browseWorkingDirectory [
-
-	FileList openOn: self workingDirectory
+	[FileList openOn: self workingDirectory] on: Error do:[self cwdNotFound ]
 ]
 
 { #category : #connections }
@@ -358,6 +357,12 @@ TerminalEmulator >> collapseOrExpand [
 
 	super collapseOrExpand.
 	self setLabel: (self isCollapsed ifTrue: [iconTitle] ifFalse: [windowTitle])
+]
+
+{ #category : #events }
+TerminalEmulator >> cwdNotFound [
+	self inform:  'Unable to identify or list the current working directory' 
+      
 ]
 
 { #category : #events }
@@ -433,8 +438,7 @@ TerminalEmulator >> initialize [
 
 { #category : #'menus-window' }
 TerminalEmulator >> inspectWorkingDirectory [
-
-	self workingDirectory inspect
+	[self workingDirectory inspect] on: Error do:[self cwdNotFound ]
 ]
 
 { #category : #events }
