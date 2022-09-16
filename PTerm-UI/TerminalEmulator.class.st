@@ -613,12 +613,15 @@ TerminalEmulator >> updateTheme [
 { #category : #private }
 TerminalEmulator >> workingDirectory [
 
-	| pid lsofCommand output path |
+	| pid lsofCommand output status path |
 
 	workingDirectory ifNotNil: [ ^ workingDirectory ].
 	pid := self tty session endpoint pid.
-	lsofCommand := 'LC_ALL=C lsof -F n0 -a -d cwd -p {1}' format: { pid }.
+	lsofCommand := 'LC_ALL=C lsof -F n0 -a -d cwd -p {1}; printf "\\n%s" $?' format: { pid }.
 	output := OSPlatform current resultOfCommand: lsofCommand.
+	status := (output copyAfterLast: Character lf) asInteger.
+	status = 0 ifFalse: [
+		Error signal: ('Could not determine working directory (lsof status: {1})' format: { status }) ].
 	path := ByteArray streamContents: [ :pathStream |
 		| outputStream |
 		outputStream := output readStream.
