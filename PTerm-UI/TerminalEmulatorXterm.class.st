@@ -175,6 +175,7 @@ TerminalEmulatorXterm >> osc: arg [
 	type := arguments first.
 	(type == 0 or: [type == 1]) ifTrue: [window setIconTitle: arguments last].
 	(type == 0 or: [type == 2]) ifTrue: [window setWindowTitle: arguments last].
+	(type == 7) ifTrue: [window setWorkingDirectory: arguments last].
 	"All others are silently ignored"
 ]
 

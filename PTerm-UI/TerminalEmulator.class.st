@@ -15,7 +15,8 @@ Class {
 	#instVars : [
 		'tty',
 		'windowTitle',
-		'iconTitle'
+		'iconTitle',
+		'workingDirectory'
 	],
 	#classVars : [
 		'AutoClose',
@@ -332,6 +333,16 @@ TerminalEmulator class >> windowMenuOn: aBuilder [
 		order: 2.6;
 		action: [ self selectTheme];
 		withSeparatorAfter.
+	(aBuilder item: #'Browse working directory')
+		order: 9;
+		action: #browseWorkingDirectory.
+	(aBuilder item: #'Inspect working directory')
+		action: #inspectWorkingDirectory.
+]
+
+{ #category : #'menus-window' }
+TerminalEmulator >> browseWorkingDirectory [
+	[FileList openOn: self workingDirectory] on: Error do:[self cwdNotFound ]
 ]
 
 { #category : #connections }
@@ -346,6 +357,12 @@ TerminalEmulator >> collapseOrExpand [
 
 	super collapseOrExpand.
 	self setLabel: (self isCollapsed ifTrue: [iconTitle] ifFalse: [windowTitle])
+]
+
+{ #category : #events }
+TerminalEmulator >> cwdNotFound [
+	self inform:  'Unable to identify or list the current working directory' 
+      
 ]
 
 { #category : #events }
@@ -404,6 +421,12 @@ TerminalEmulator >> handlesKeyboard: evt [
 	^true
 ]
 
+{ #category : #'menus-window' }
+TerminalEmulator >> hasWorkingDirectory [
+
+	^ workingDirectory notNil
+]
+
 { #category : #'initialize-release' }
 TerminalEmulator >> initialize [
 
@@ -411,6 +434,11 @@ TerminalEmulator >> initialize [
 	self setLabel: (windowTitle := iconTitle := 'Terminal').
 	self attachKeymapCategory: #TerminalEmulator targetting: self.
 	self extent: 10@10.
+]
+
+{ #category : #'menus-window' }
+TerminalEmulator >> inspectWorkingDirectory [
+	[self workingDirectory inspect] on: Error do:[self cwdNotFound ]
 ]
 
 { #category : #events }
@@ -423,6 +451,40 @@ TerminalEmulator >> keyStroke: evt [
 TerminalEmulator >> keyboardFocusChange: aBoolean [
 	super keyboardFocusChange: aBoolean.
 	self tty keyboardFocusChange: aBoolean 
+]
+
+{ #category : #private }
+TerminalEmulator >> nextByteFromLsofOutput: outputStream [
+
+	| character |
+	
+	character := outputStream next.
+	character = $\ ifTrue: [
+		character := outputStream next.
+		character = $b ifTrue: [ ^ Character backspace asciiValue ].
+		character = $f ifTrue: [ ^ Character newPage asciiValue ].
+		character = $r ifTrue: [ ^ Character cr asciiValue ].
+		character = $n ifTrue: [ ^ Character lf asciiValue ].
+		character = $t ifTrue: [ ^ Character tab asciiValue ].
+		character = $\ ifTrue: [ ^ $\ asciiValue ].
+		character = $x ifTrue: [
+			| digitValue1 digitValue2 |
+			digitValue1 := outputStream next digitValue.
+			digitValue2 := outputStream next digitValue.
+			^ digitValue1 * 16 + digitValue2 ].
+		Error signal: ('Could not read lsof output due to unrecognized character escape sequence: {1}' format: {
+			(String with: $\ with: character) printString }) ].
+	character = $^ ifTrue: [
+		"Note that lsof's output is ambiguous in this case, see: https://github.com/lsof-org/lsof/issues/130.
+		We interpret a $^ followed by $A through $_ as a control character, and as a plain $^ otherwise."
+		character := outputStream peek.
+		^ (character asciiValue between: $A asciiValue and: $_ asciiValue)
+			ifTrue: [
+				outputStream next.
+				character asciiValue - $@ asciiValue ]
+			ifFalse: [ $^ asciiValue ] ].
+	^ character asciiValue
+
 ]
 
 { #category : #'initialize-release' }
@@ -503,6 +565,15 @@ TerminalEmulator >> setWindowTitle: aString [
 	self isCollapsed ifFalse: [self setLabel: aString].
 ]
 
+{ #category : #accessing }
+TerminalEmulator >> setWorkingDirectory: fileURLString [
+
+	| fileURL |
+
+	fileURL := [ ZnUrl fromString: fileURLString ] on: Error do: [ :error | nil ].
+	workingDirectory := fileURL ifNotNil: [ fileURL asFileReference ].
+]
+
 { #category : #events }
 TerminalEmulator >> simulateShortcutAsKeyStroke: comb [
 	|evt|
@@ -537,4 +608,25 @@ TerminalEmulator >> updateFont [
 { #category : #events }
 TerminalEmulator >> updateTheme [
 	tty setUpTheme.
+]
+
+{ #category : #private }
+TerminalEmulator >> workingDirectory [
+
+	| pid lsofCommand output status path |
+
+	workingDirectory ifNotNil: [ ^ workingDirectory ].
+	pid := self tty session endpoint pid.
+	lsofCommand := 'LC_ALL=C lsof -F n0 -a -d cwd -p {1}; printf "\\n%s" $?' format: { pid }.
+	output := OSPlatform current resultOfCommand: lsofCommand.
+	status := (output copyAfterLast: Character lf) asInteger.
+	status = 0 ifFalse: [
+		Error signal: ('Could not determine working directory (lsof status: {1})' format: { status }) ].
+	path := ByteArray streamContents: [ :pathStream |
+		| outputStream |
+		outputStream := output readStream.
+		outputStream skipTo: Character null; skipTo: Character null; next.
+		[ outputStream peek = Character null ] whileFalse: [
+			pathStream nextPut: (self nextByteFromLsofOutput: outputStream) ] ].
+	^ path utf8Decoded asFileReference
 ]
