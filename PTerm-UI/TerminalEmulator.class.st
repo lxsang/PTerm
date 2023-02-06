@@ -159,9 +159,9 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 	<worldMenu> 
 	
 	(aBuilder item: #'Terminal')
-		order: 0.8; 
+		order: 4; 
 		icon: self icon;  
-		parent: #'MostUsedTools';
+		parent: #'SystemTools';
 		keyText: 'o, c';
 		help: 'Terminal';
 		action: [ self openBash ].
