@@ -588,6 +588,16 @@ TerminalEmulator >> simulateShortcutAsKeyStroke: comb [
 	tty keyStroke: evt
 ]
 
+{ #category : #stepping }
+TerminalEmulator >> stepAt: millisecondClockValue [
+	"Ignored here for P10 and P11 compatibility"
+]
+
+{ #category : #stepping }
+TerminalEmulator >> stepTime [
+	^200 "milliseconds"
+]
+
 { #category : #accessing }
 TerminalEmulator >> tty [
 
