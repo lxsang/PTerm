@@ -784,6 +784,7 @@ TerminalEmulatorVT102 >> setCursorKeysNormal [
 	| esc |
 	esc := Character escape asString.
 	keyMap
+		at: 127    put: (esc,'[3~') asByteArray;		"delete"
 		at: 128+28 put: (esc,'[D') asByteArray;		"left"
 		at: 128+29 put: (esc,'[C') asByteArray;		"right" 
 		at: 128+30 put: (esc,'[A') asByteArray;		"up"
