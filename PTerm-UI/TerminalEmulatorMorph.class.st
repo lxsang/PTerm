@@ -993,13 +993,36 @@ TerminalEmulatorMorph >> isConnected [
 
 { #category : #events }
 TerminalEmulatorMorph >> keyDown: evt [
-	evt commandKeyPressed ifTrue:[^self processKeyEvent: evt].
-	evt controlKeyPressed ifTrue: [
-		^ (evt keyValue = 0) ifTrue: [ self ] ifFalse: [ self processKeyEvent: evt ] ].
-	evt shiftPressed ifTrue: [ ^self].
-	evt keyValue < 32 ifTrue:[
-		self processKeyEvent: evt
+	
+	"Emprically, Pharo 8 sends both keyDown: and keyStroke: events
+	 when a key is pressed. Therefore, on Pharo 8 we *must not* delegate
+	 to processKeyEvent: otherwise we'd end up with duplicated input.
+	 So, on Pharo 8, do nothing."
+	SystemVersion current major <= 8 ifTrue:[
+		^ super keyDown: evt
 	].
+	"On (at least) Pharo 10 and Pharo 11, keyStroke: is *only* sent
+	 for ASCII printable characters except DEL - #keyValue 32-126 - 
+	 when no modifier (Ctrl / Alt) is pressed at the same time. 
+	
+	 keyDown: is sent for all, printable or non-printable / command keys.
+	 with or without modifiers. 
+	
+	 Tricky, is it not?
+	
+	 So, on Pharo 9 and newer we delegate any keyDown: event that is either
+	 for non-printable ASCII or has any modifier pressed. Tricky, isn't it?
+	"	
+	evt anyModifierKeyPressed ifTrue:[
+		^ self processKeyEvent: evt.
+	].		
+	(evt keyValue between: 32 and: 126) ifFalse: [	
+		^ self processKeyEvent: evt
+	].
+
+	"None of the above..."
+	^ super keyDown: evt
+	
 ]
 
 { #category : #events }
