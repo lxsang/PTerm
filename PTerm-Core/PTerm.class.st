@@ -165,17 +165,18 @@ PTerm >> spawn: cmd args: argv [
 
 { #category : #'instance creation' }
 PTerm >> spawn: cmd args: argv env:envs [
-	| status  fname fileaction |
+	| status  fname fileaction spawnattr |
 	"allocate the file action structure (void* for now)"
 	status := FFIUInt32  newBuffer.
 	master ifNil: [ master := self lib master ].
 	"self lib setNonBlocking: master."
 	fname := self lib ptsname: self master.
 	fileaction  := self lib fileActionSettingFor:fname.
+	spawnattr := self lib spawnAttrSettingFor: fname.
 	self lib posixSpawn: status 
 			process: cmd
 			fileAction: fileaction
-			fileAttr: nil
+			fileAttr: spawnattr 
 			argv: argv
 			env: envs.
 	pid := status integerAt: 1 size: 4 signed:true.
