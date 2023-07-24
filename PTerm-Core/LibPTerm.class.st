@@ -1,6 +1,9 @@
 Class {
 	#name : #LibPTerm,
 	#superclass : #FFILibrary,
+	#classVars : [
+		'IsLinux'
+	],
 	#classInstVars : [
 		'instance'
 	],
@@ -26,6 +29,66 @@ LibPTerm class >> O_NONBLOCK [
 { #category : #'C-constants' }
 LibPTerm class >> O_RDWR [
 	^2
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_RESETIDS [
+	IsLinux ifTrue:[ ^ 16r01 ].
+
+	self error: '(Yet) unsupported operating system'
+
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_SETPGROUP [
+	IsLinux ifTrue:[ ^ 16r02 ].
+
+	self error: '(Yet) unsupported operating system'
+
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_SETSCHEDPARAM [
+	IsLinux ifTrue:[ ^ 16r10 ].
+
+	self error: '(Yet) unsupported operating system'
+
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_SETSCHEDULER [
+	IsLinux ifTrue:[ ^ 16r20 ].
+
+	self error: '(Yet) unsupported operating system'.
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_SETSID [
+	IsLinux ifTrue:[ ^ 16r80 ].
+
+	self error: '(Yet) unsupported operating system'.
+
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_SETSIGDEF [
+	IsLinux ifTrue:[ ^ 16r04 ].
+
+	self error: '(Yet) unsupported operating system'.
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_SETSIGMASK [
+	IsLinux ifTrue:[ ^ 16r08 ].
+
+	self error: '(Yet) unsupported operating system'.
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> POSIX_SPAWN_USEVFORK [
+	IsLinux ifTrue:[ ^ 16r40 ].
+
+	self error: '(Yet) unsupported operating system'.
 ]
 
 { #category : #'C-constants' }
@@ -75,6 +138,12 @@ LibPTerm class >> compile [
 	ofile asFileReference delete
 ]
 
+{ #category : #initialization }
+LibPTerm class >> initialize [
+	IsLinux := Smalltalk os version beginsWith: 'linux'
+
+]
+
 { #category : #compilation }
 LibPTerm class >> mksource [
 	|file stream|
@@ -100,6 +169,21 @@ LibPTerm class >> singleton [
 LibPTerm class >> sizeOfFileAction [
 	"we fix it to 80 for now"
 	^80
+]
+
+{ #category : #'C-constants' }
+LibPTerm class >> sizeOfSpawnAttr [
+	IsLinux ifTrue:[
+		"FIXME: this number is emprical value I've got on 
+		 my amd64 linux system. This demonstrates the fundamental
+		problem of nearly all FFI implementations."
+		^ 340
+	].
+
+	self error: '(Yet) unsupported operating system'
+
+
+
 ]
 
 { #category : #compilation }
@@ -290,6 +374,30 @@ LibPTerm >> setNonBlocking: fd [
 	st := self fnctl: fd action: self class F_SETFL flag: flag.
 	st = 0 ifFalse:[^self error: 'Cannot set nonblocking'].
 	^st
+]
+
+{ #category : #lib }
+LibPTerm >> spawnAttrDestroy: pointer [
+	^self ffiCall: #(int posix_spawnattr_destroy( void* pointer )) module: LibC.
+]
+
+{ #category : #lib }
+LibPTerm >> spawnAttrInit: pointer [
+	^self ffiCall: #(int posix_spawnattr_init( void* pointer )) module: LibC.
+]
+
+{ #category : #lib }
+LibPTerm >> spawnAttrSetFlags: pointer flags: flags [
+	^self ffiCall: #(int posix_spawnattr_setflags( void* pointer, uint16 flags )) module: LibC.
+]
+
+{ #category : #lib }
+LibPTerm >> spawnAttrSettingFor:name [
+	| ptr |
+	ptr := ExternalAddress allocate: self class sizeOfSpawnAttr.
+	self spawnAttrInit: ptr.
+	self spawnAttrSetFlags: ptr flags: self class POSIX_SPAWN_SETSID. 
+	^ ptr
 ]
 
 { #category : #lib }
