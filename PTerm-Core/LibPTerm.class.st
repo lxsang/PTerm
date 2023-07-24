@@ -119,40 +119,10 @@ LibPTerm class >> TIOCSWINSZ [
 	^21524
 ]
 
-{ #category : #compilation }
-LibPTerm class >> compile [
-	|cmd arch st fp libfile ofile|
-	fp := self mksource.
-	ofile := fp parent / 'libpterm.o'.
-	libfile := fp parent / 'libpterm.flib'.
-	arch := Smalltalk vm wordSize = 8 ifTrue: [ '-m64' ] ifFalse: [ '-m32' ].
-	cmd := 'gcc -c -fpic ', arch, ' "', fp pathString, '" -o "', ofile pathString, '"'.
-	Transcript show: 'Building: ', cmd; cr.
-	st := LibC system: cmd.
-	st = 0 ifFalse: [ ^self error:'LibC Cannot create object file' ].
-	cmd := 'gcc -shared ', arch, ' -o "',libfile pathString,'" "', ofile pathString, '"'.
-	Transcript show: 'Building: ', cmd; cr.
-	st := LibC system: cmd. 
-	st = 0 ifFalse: [ ^self error:'LibC Cannot create shared file' ].
-	fp exists ifTrue:[ fp delete ].
-	ofile asFileReference delete
-]
-
 { #category : #initialization }
 LibPTerm class >> initialize [
 	IsLinux := Smalltalk os version beginsWith: 'linux'
 
-]
-
-{ #category : #compilation }
-LibPTerm class >> mksource [
-	|file stream|
-	file := (FileLocator localDirectory absolutePath / 'libpterm.c') asFileReference.
-	file exists ifTrue:[ file delete ].
-	stream := file writeStream.
-	stream nextPutAll: self source.
-	stream close.
-	^file
 ]
 
 { #category : #'instance creation' }
@@ -184,66 +154,6 @@ LibPTerm class >> sizeOfSpawnAttr [
 
 
 
-]
-
-{ #category : #compilation }
-LibPTerm class >> source [
-	^ '
-#define _GNU_SOURCE 
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <string.h>
-pid_t pterm_spawn_tty(int master, char** args, char** envs)
-{
-    // get file name
-    char* fname = ptsname(master);
-    int fds = open(fname, O_RDWR);
-    pid_t pid = fork();
-    if(pid == 0)
-    {
-        // child
-        close(master);
-        close(0);
-        close(1);
-        close(2);
-        dup(fds);
-        dup(fds);
-        dup(fds);
-        close(fds);
-        setsid();
-        ioctl(0, TIOCSCTTY, 1);
-        execve(args[0], &args[0], envs);
-        // when we have problem
-        exit(1);
-    }
-    return pid;
-}
-int tty_set_winsize(int fdm, int rows, int cols)
-{ 
-	struct winsize win = {0, 0, 0, 0};
-	if (ioctl(fdm, TIOCGWINSZ, &win) != 0)
-	{
-		if (errno != EINVAL)
-		{
-			return -1;
-		}
-		memset(&win, 0, sizeof(win));
-	}
-	if (rows >= 0)
-		win.ws_row = rows;
-	if (cols >= 0)
-		win.ws_col = cols;
-
-	if (ioctl(fdm, TIOCSWINSZ, (char *)&win) != 0)
-		return -1;
-	return 0;
-}
-'
 ]
 
 { #category : #lib }
@@ -411,15 +321,6 @@ LibPTerm >> stringArrayOf: anArray [
 ]
 
 { #category : #lib }
-LibPTerm >> ttySpawn: fd argv: argv envs:envs [
-	[ ^ self xspawn: fd argv: argv  envs: envs ] on: Error do: [ 
-		"try tho compile it"
-		self class compile.
-		^self xspawn: fd argv: argv  envs: envs
-	] 
-]
-
-{ #category : #lib }
 LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
 	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols)) 
 ]
@@ -442,9 +343,4 @@ LibPTerm >> waitpid: pid status: buf noHang: v [
 { #category : #writing }
 LibPTerm >> write: fd buffer: buff size: size [
 	^self ffiCall: #(int write(int fd, char* buff, int size)) module: LibC 
-]
-
-{ #category : #lib }
-LibPTerm >> xspawn: fd argv: argv envs:envs [
-	^ self ffiCall: #(int pterm_spawn_tty(int fd, void* argv, void* envs)) 
 ]

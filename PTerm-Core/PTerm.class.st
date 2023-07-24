@@ -227,11 +227,8 @@ PTerm >> xspawn: argv env:envs [
 	xarray ifNotNil: [ xarray := xarray getHandle ].
 	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
-	"try to use the external lib if not sucess, fallback to the posix_spawn"
-	[pid := self lib ttySpawn: master argv: xarray   envs: earray ] on: Error do:[
-		usedFallback := true.
-		self spawn: (argv first) args: xarray   env: earray 
-	].
-	active:= true.
+	usedFallback := true.
+	self spawn: (argv first) args: xarray   env: earray.
+	active := true.
 	Transcript show: 'Command run on process: ', pid asString; cr.
 ]
