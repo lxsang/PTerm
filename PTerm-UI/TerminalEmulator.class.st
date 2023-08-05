@@ -182,12 +182,38 @@ TerminalEmulator class >> open [
 
 { #category : #'instance creation' }
 TerminalEmulator class >> open: path arguments: arguments [
-	
-	| win term |
+	| term |
+		
+	term := PTerm new xspawn: { path } , arguments env: self environ.
+	^ self openPTerm: term.
+]
 
+{ #category : #'instance creation' }
+TerminalEmulator class >> openBash [
+	^self openShell: '/bin/bash'
+	
+]
+
+{ #category : #'instance creation' }
+TerminalEmulator class >> openPTY: fd [ 
+	"Open terminal emulator window given an open PTY master file descriptor.
+	 Return created window. 
+	 
+	 See posix_openpt(2)"
+	
+	| term |
+	
+	self assert: fd isInteger.	
+	term := PTerm new master: fd.
+	^ self openPTerm: term.
+]
+
+{ #category : #private }
+TerminalEmulator class >> openPTerm: term [
+	| win |
+	
 	self checkFont.
 	self cleanUpKeyMap.
-	term := PTerm new xspawn: { path } , arguments env: self environ.
 	win := self open.
 	term asProtocolStack
 		push: TerminalEmulatorXterm new;
@@ -197,12 +223,6 @@ TerminalEmulator class >> open: path arguments: arguments [
 	win extent: win extent.
 	^ win	
 
-]
-
-{ #category : #'instance creation' }
-TerminalEmulator class >> openBash [
-	^self openShell: '/bin/bash'
-	
 ]
 
 { #category : #'instance creation' }
