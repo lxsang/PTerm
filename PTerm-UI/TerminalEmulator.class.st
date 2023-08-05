@@ -151,6 +151,12 @@ TerminalEmulator class >> initialize [
 	TerminalType := TerminalEmulatorXterm.
 	Shortcuts := Dictionary new.
 	
+	self announcer when: TerminalEmulatorConfigChange do: [:e|
+		self allInstancesDo: [ :i |
+			e data class = LogicalFont ifTrue:[i updateFont]
+			ifFalse:[i updateTheme]
+		]
+	].
 ]
 
 { #category : #'world menu' }
@@ -166,17 +172,6 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 		help: 'Terminal';
 		action: [ self openBash ].
 
-]
-
-{ #category : #'instance creation' }
-TerminalEmulator class >> new [
-	self announcer when: TerminalEmulatorConfigChange do: [:e|
-		self allInstancesDo: [ :i |
-			e data class = LogicalFont ifTrue:[i updateFont]
-			ifFalse:[i updateTheme]
-		]
-	].
-	^super new initialize
 ]
 
 { #category : #'instance creation' }
