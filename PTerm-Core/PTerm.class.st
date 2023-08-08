@@ -134,31 +134,6 @@ PTerm >> setWinsize: point [
 ]
 
 { #category : #'instance creation' }
-PTerm >> spawn [
-	|buff status argv xarray fname fileaction pid count data|
-	"allocate the file action structure (void* for now)"
-	status := FFIUInt32  newBuffer.
-	argv := {'ls'. '-al'}.
-	xarray := self lib stringArrayOf: argv.
-	master := self lib master.
-	fname := self lib ptsname: self master.
-	fileaction  := self lib fileActionSettingFor:fname.
-	self lib posixSpawn: status process: '/bin/ls' fileAction: fileaction fileAttr: nil  argv: xarray getHandle  env: nil.
-	pid := status integerAt: 1 size: 4 signed:true.
-	"read the stdout then print"
-	buff := self lib getReadWriteBufferOf: 2048.
-	count := self lib read: self master buffer: buff  size: 2048.
-	Transcript show: 'Read ', count asString, 'bytes'; cr.
-	data :=  String
-	newFrom: (FFIExternalArray fromHandle: buff type: 'char' size: count).
-	Transcript show: data;cr.
-	self lib kill: pid signal: self lib class SIGKILL.
-	self lib waitpit: pid status: status noHang: 0. 
-	fileaction free.
-	Transcript show: 'Finish'.
-]
-
-{ #category : #'instance creation' }
 PTerm >> spawn: cmd args: argv [
 	^self spawn: cmd args: argv  env: nil 
 ]
