@@ -360,13 +360,6 @@ TerminalEmulator >> browseWorkingDirectory [
 	[FileList openOn: self workingDirectory] on: Error do:[self cwdNotFound ]
 ]
 
-{ #category : #connections }
-TerminalEmulator >> closeConnection [
-
-	(self confirm: 'Really disconnect?') ifTrue: [tty session endpoint close. ^true].
-	^ false
-]
-
 { #category : #events }
 TerminalEmulator >> collapseOrExpand [
 
@@ -382,7 +375,7 @@ TerminalEmulator >> cwdNotFound [
 
 { #category : #events }
 TerminalEmulator >> delete [
-	self closeConnection ifFalse: [ ^self ].
+	tty session endpoint close.
 	tty delete.
 	^super delete
 
