@@ -1,9 +1,6 @@
 Class {
 	#name : #LibPTerm,
 	#superclass : #FFILibrary,
-	#classVars : [
-		'IsLinux'
-	],
 	#classInstVars : [
 		'instance'
 	],
@@ -32,63 +29,11 @@ LibPTerm class >> O_RDWR [
 ]
 
 { #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_RESETIDS [
-	IsLinux ifTrue:[ ^ 16r01 ].
-
-	self error: '(Yet) unsupported operating system'
-
-]
-
-{ #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_SETPGROUP [
-	IsLinux ifTrue:[ ^ 16r02 ].
-
-	self error: '(Yet) unsupported operating system'
-
-]
-
-{ #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_SETSCHEDPARAM [
-	IsLinux ifTrue:[ ^ 16r10 ].
-
-	self error: '(Yet) unsupported operating system'
-
-]
-
-{ #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_SETSCHEDULER [
-	IsLinux ifTrue:[ ^ 16r20 ].
-
-	self error: '(Yet) unsupported operating system'.
-]
-
-{ #category : #'C-constants' }
 LibPTerm class >> POSIX_SPAWN_SETSID [
 	Smalltalk os isLinux ifTrue:[ ^ 16r80 ].
 	Smalltalk os isMacOS  ifTrue:[^ 16r400].
 	self error: '(Yet) unsupported operating system'.
 
-]
-
-{ #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_SETSIGDEF [
-	IsLinux ifTrue:[ ^ 16r04 ].
-
-	self error: '(Yet) unsupported operating system'.
-]
-
-{ #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_SETSIGMASK [
-	IsLinux ifTrue:[ ^ 16r08 ].
-
-	self error: '(Yet) unsupported operating system'.
-]
-
-{ #category : #'C-constants' }
-LibPTerm class >> POSIX_SPAWN_USEVFORK [
-	IsLinux ifTrue:[ ^ 16r40 ].
-
-	self error: '(Yet) unsupported operating system'.
 ]
 
 { #category : #'C-constants' }
@@ -110,19 +55,15 @@ LibPTerm class >> ST_WINSIZE [
 { #category : #'C-constants' }
 LibPTerm class >> TIOCGWINSZ [
 	Smalltalk os isMacOS ifTrue: [ ^1074295912 ].
-	^21523
+	Smalltalk os isLinux ifTrue: [ ^ 21523].
+	self error: '(Yet) unsupported operating system'.
 ]
 
 { #category : #'C-constants' }
 LibPTerm class >> TIOCSWINSZ [
 	Smalltalk os isMacOS ifTrue: [ ^2148037735 ].
-	^21524
-]
-
-{ #category : #initialization }
-LibPTerm class >> initialize [
-	IsLinux := Smalltalk os version beginsWith: 'linux'
-
+	Smalltalk os isLinux ifTrue: [ ^21524 ].
+	self error: '(Yet) unsupported operating system'.
 ]
 
 { #category : #'instance creation' }
@@ -302,15 +243,6 @@ LibPTerm >> spawnAttrSetFlags: pointer flags: flags [
 ]
 
 { #category : #lib }
-LibPTerm >> spawnAttrSettingFor:name [
-	| ptr |
-	ptr := ExternalAddress allocate: self class sizeOfSpawnAttr.
-	self spawnAttrInit: ptr.
-	self spawnAttrSetFlags: ptr flags: self class POSIX_SPAWN_SETSID. 
-	^ ptr
-]
-
-{ #category : #lib }
 LibPTerm >> stringArrayOf: anArray [
 	|xarray|
 	anArray  ifNil: [ ^nil ].
@@ -318,11 +250,6 @@ LibPTerm >> stringArrayOf: anArray [
 	anArray withIndexDo: [ :v :i| xarray at:i put: (ExternalAddress fromString: v) ]. 
 	xarray at:anArray size + 1 put: (ExternalAddress  fromAddress: 0).
 	^ xarray 
-]
-
-{ #category : #lib }
-LibPTerm >> ttyWinSize: fd rows:rows cols:cols [
-	^ self ffiCall: #(int tty_set_winsize(int fd, int rows, int cols)) 
 ]
 
 { #category : #'accessing platform' }

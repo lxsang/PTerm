@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'master',
 		'pid',
-		'usedFallback',
 		'announcer',
 		'sub',
 		'active',
@@ -20,15 +19,10 @@ PTerm >> announcer [
 
 { #category : #protocol }
 PTerm >> close [
-
 	self master ifNotNil: [
-		usedFallback ifFalse: [
-			pid ifNotNil: [ 
-				self lib kill: pid signal: self lib class SIGHUP ]
-		] ifTrue: [
 			self nextPutAllCr: 'exit'.
 			pid ifNotNil: [ 
-				self lib kill: pid signal: self lib class SIGKILL ] ] ]
+				self lib kill: pid signal: self lib class SIGKILL ] ]
 ]
 
 { #category : #accessing }
@@ -46,7 +40,6 @@ PTerm >> initialize [
 	announcer := Announcer new.
 	active := false.
 	wbuff := ExternalAddress allocate: 8.
-	usedFallback := false
 ]
 
 { #category : #protocol }
@@ -116,21 +109,19 @@ PTerm >> run [
 { #category : #initialization }
 PTerm >> setWinsize: point [
 	|buf arr st|
-	[self lib ttyWinSize: self master rows: point y  cols: point x] on: Error do: [
-		buf := FFIExternalArray externalNewType: 'uint8' size: self lib class ST_WINSIZE.
-		arr := point y asByteArrayOfSize: 2.
-		buf at: 1 put: (arr at:2).
-		buf at:2 put: (arr at: 1).
-		arr := point x asByteArrayOfSize: 2.
-		buf at: 3 put: (arr at: 2).
-		buf at: 4 put: (arr at:1).
-		buf at: 5 put: 0.
-		buf at: 6 put: 0.
-		buf at: 7 put: 0.
-		buf at: 8 put:0.
-		st := self lib ioct: self master cmd: self lib class TIOCSWINSZ  arg: buf getHandle.
-		st = 0 ifFalse:[^self error: 'Cannot set window size to', point asString ]
-	]
+	buf := FFIExternalArray externalNewType: 'uint8' size: self lib class ST_WINSIZE.
+	arr := point y asByteArrayOfSize: 2.
+	buf at: 1 put: (arr at:2).
+	buf at:2 put: (arr at: 1).
+	arr := point x asByteArrayOfSize: 2.
+	buf at: 3 put: (arr at: 2).
+	buf at: 4 put: (arr at:1).
+	buf at: 5 put: 0.
+	buf at: 6 put: 0.
+	buf at: 7 put: 0.
+	buf at: 8 put:0.
+	st := self lib ioct: self master cmd: self lib class TIOCSWINSZ  arg: buf getHandle.
+	st = 0 ifFalse:[^self error: 'Cannot set window size to', point asString ]
 ]
 
 { #category : #'instance creation' }
@@ -147,7 +138,7 @@ PTerm >> spawn: cmd args: argv env:envs [
 	"self lib setNonBlocking: master."
 	fname := self lib ptsname: self master.
 	fileaction  := self lib fileActionSettingFor:fname.
-	spawnattr := self lib spawnAttrSettingFor: fname.
+	spawnattr := self spawnAttrSetting.
 	self lib posixSpawn: status 
 			process: cmd
 			fileAction: fileaction
@@ -156,7 +147,15 @@ PTerm >> spawn: cmd args: argv env:envs [
 			env: envs.
 	pid := status integerAt: 1 size: 4 signed:true.
 	fileaction free.
-	Transcript show: 'Created non interractive shell';cr.
+]
+
+{ #category : #lib }
+PTerm >> spawnAttrSetting [
+	| ptr |
+	ptr := ExternalAddress allocate: self lib class sizeOfSpawnAttr.
+	self assert:(self lib spawnAttrInit: ptr) = 0.
+	self assert: (self lib spawnAttrSetFlags: ptr flags: self lib class POSIX_SPAWN_SETSID) = 0. 
+	^ ptr
 ]
 
 { #category : #'instance creation' }
@@ -202,7 +201,6 @@ PTerm >> xspawn: argv env:envs [
 	xarray ifNotNil: [ xarray := xarray getHandle ].
 	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
-	usedFallback := true.
 	self spawn: (argv first) args: xarray   env: earray.
 	active := true.
 	Transcript show: 'Command run on process: ', pid asString; cr.
