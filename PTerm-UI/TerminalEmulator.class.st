@@ -234,7 +234,7 @@ TerminalEmulator class >> openShell: path [
 
 { #category : #accessing }
 TerminalEmulator class >> palette [
-	palette ifNil: [ palette := PTermSolarizedTheme dark ].
+	palette ifNil: [ ^ UITheme current terminalEmulatorPalette ].
 	^ palette
 ]
 
