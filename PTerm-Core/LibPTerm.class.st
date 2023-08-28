@@ -64,8 +64,8 @@ LibPTerm class >> POSIX_SPAWN_SETSCHEDULER [
 
 { #category : #'C-constants' }
 LibPTerm class >> POSIX_SPAWN_SETSID [
-	IsLinux ifTrue:[ ^ 16r80 ].
-
+	Smalltalk os isLinux ifTrue:[ ^ 16r80 ].
+	Smalltalk os isMacOS  ifTrue:[^ 16r400].
 	self error: '(Yet) unsupported operating system'.
 
 ]
@@ -143,7 +143,7 @@ LibPTerm class >> sizeOfFileAction [
 
 { #category : #'C-constants' }
 LibPTerm class >> sizeOfSpawnAttr [
-	IsLinux ifTrue:[
+	(Smalltalk os isLinux or: [Smalltalk os isMacOS])  ifTrue:[
 		"FIXME: this number is emprical value I've got on 
 		 my amd64 linux system. This demonstrates the fundamental
 		problem of nearly all FFI implementations."
