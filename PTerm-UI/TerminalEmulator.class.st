@@ -361,6 +361,15 @@ TerminalEmulator >> browseWorkingDirectory [
 ]
 
 { #category : #events }
+TerminalEmulator >> closeBoxHit [
+	"The user clicked on the close-box control in the window title."
+	self allowedToClose ifFalse: [^self].
+	(self confirm: 'Really close?') ifFalse:[^self].
+	super closeBoxHit
+
+]
+
+{ #category : #events }
 TerminalEmulator >> collapseOrExpand [
 
 	super collapseOrExpand.
