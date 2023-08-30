@@ -73,6 +73,29 @@ LibPTermTest >> testOpenpt [
 ]
 
 { #category : #tests }
+LibPTermTest >> testSpawnAttrInit [
+	|lib pointer st|
+	lib := LibPTerm singleton.
+	pointer := ExternalAddress allocate: lib class sizeOfSpawnAttr .
+	st := lib spawnAttrInit: pointer.
+	pointer free.
+	self assert: [ st = 0 ].
+]
+
+{ #category : #tests }
+LibPTermTest >> testSpawnAttrSetFlags [
+	|lib pointer st|
+	lib := LibPTerm singleton.
+	pointer := ExternalAddress allocate: lib class sizeOfSpawnAttr .
+	self assert: [ pointer ~= nil ].
+	st := lib spawnAttrInit: pointer.
+	self assert: [ st = 0 ].
+	st := lib spawnAttrSetFlags: pointer flags: lib class POSIX_SPAWN_SETSID. 
+	self assert: [ st = 0 ]. 
+	pointer free.
+]
+
+{ #category : #tests }
 LibPTermTest >> testUnlock [
 	|lib fd st|
 	lib := LibPTerm singleton.
