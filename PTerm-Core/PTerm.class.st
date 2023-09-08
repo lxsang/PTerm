@@ -20,9 +20,9 @@ PTerm >> announcer [
 { #category : #protocol }
 PTerm >> close [
 	self master ifNotNil: [
-			self nextPutAllCr: 'exit'.
-			pid ifNotNil: [ 
-				self lib kill: pid signal: self lib class SIGKILL ] ]
+		pid ifNotNil: [ 
+			self lib kill: pid signal: self lib class SIGHUP ] ]
+
 ]
 
 { #category : #accessing }
