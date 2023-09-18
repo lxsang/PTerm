@@ -49,22 +49,9 @@ TerminalEmulator class >> buildTerminalShortcutsOn: aBuilder [
 
 { #category : #font }
 TerminalEmulator class >> checkFont [
-	|path|
 	(self hasFont: self fontFamily) ifTrue:[^self fontFamily].
-	path := self fontsDir.
 	[
-		self fontsURI do:[:a|
-			(path / (a key)) exists ifFalse:[
-				"Download the font"
-				ZnClient new
-					url: a value;
-					downloadTo: path.
-			]
-		] displayingProgress: [ 'Checking and downloading font' ].
-		FreeTypeFontProvider current prepareForUpdating.
-		FreeTypeFontProvider current updateAvailableFontFamilies.
-		FreeTypeFontProvider current updateFromSystem.
-		FreeTypeFontProvider current updateAvailableFontFamilies.
+		FreeTypeFontProvider current updateEmbeddedFreeTypeFonts.
 		(self hasFont: self fontFamily) ifFalse:[^self selecFont].
 		^self fontFamily
 	] on: Error do: [^self selecFont]
@@ -115,16 +102,6 @@ TerminalEmulator class >> fontsDir [
 	path := FreeTypeFontProvider current imageRelativeFontFolder.
 	path exists ifFalse:[ path createDirectory  ].
 	^path
-]
-
-{ #category : #font }
-TerminalEmulator class >> fontsURI [
-^{
-	'DejaVuSansMono-Bold.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Bold.ttf'.
-	'DejaVuSansMono-BoldOblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-BoldOblique.ttf'.
-	'DejaVuSansMono-Oblique.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono-Oblique.ttf'.
-	'DejaVuSansMono.ttf' -> 'https://github.com/lxsang/PTerm/raw/master/fonts/DejaVuSansMono.ttf'.
-}
 ]
 
 { #category : #font }
