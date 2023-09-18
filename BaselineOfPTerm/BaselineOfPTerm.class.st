@@ -15,6 +15,6 @@ spec for: #common do: [
 		package: 'PTerm-Protocol';
 		package: 'PTerm-Fonts';
 		package: 'PTerm-UI';
-		group: 'default' with: #('PTerm-Core' 'PTerm-Test'  'PTerm-UI')
+		group: 'default' with: #('PTerm-Core' 'PTerm-Test' 'PTerm-Fonts' 'PTerm-UI')
 ]
 ]
