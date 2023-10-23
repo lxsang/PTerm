@@ -147,7 +147,7 @@ TerminalEmulator class >> menuCommandOn: aBuilder [
 		parent: #'SystemTools';
 		keyText: 'o, c';
 		help: 'Terminal';
-		action: [ self openBash ].
+		action: [ self openDefaultShell  ].
 
 ]
 
@@ -168,6 +168,12 @@ TerminalEmulator class >> open: path arguments: arguments [
 { #category : #'instance creation' }
 TerminalEmulator class >> openBash [
 	^self openShell: '/bin/bash'
+	
+]
+
+{ #category : #'instance creation' }
+TerminalEmulator class >> openDefaultShell [
+	^self open: (OSEnvironment current at: 'SHELL' ifAbsent: [ '/bin/sh' ]) arguments: #()
 	
 ]
 
