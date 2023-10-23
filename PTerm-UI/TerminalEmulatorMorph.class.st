@@ -1276,6 +1276,7 @@ TerminalEmulatorMorph >> processKeyEvent: evt [
 	"Handle VT100 control key"
 	(evt controlKeyPressed)
 			ifTrue: [
+				(char = 0) ifTrue:[^self].
 				(char = 32) ifTrue: [ ^ down downcall: 0 ].
 				(char between: 65 and: 93) ifTrue: [ char := char + 32 ].
 				(char between: 97 and: 125) ifTrue: [ ^ down downcall: char - 96 ]
