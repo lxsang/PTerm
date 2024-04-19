@@ -166,7 +166,7 @@ LibPTerm >> kill: pid signal: sig [
 
 { #category : #'accessing platform' }
 LibPTerm >> macModuleName [ 
-	^ self moduleName
+	^ 'libtty.dylib'
 ]
 
 { #category : #accessing }
@@ -180,11 +180,6 @@ LibPTerm >> master [
 	st ~= 0 ifTrue: [ self closept: fd. ^ self error: 'Error on unlockpt()' ].
 	^fd
 	
-]
-
-{ #category : #'accessing platform' }
-LibPTerm >> moduleName [
-	^ (FileLocator localDirectory absolutePath / 'libpterm.flib') asFileReference pathString
 ]
 
 { #category : #lib }
@@ -252,9 +247,15 @@ LibPTerm >> stringArrayOf: anArray [
 	^ xarray 
 ]
 
+{ #category : #lib }
+LibPTerm >> ttySpawn: fdm path: path argv: argv envs: envp [
+
+	^ self ffiCall: #(int tty_spawn(int fdm, const char* path, void* argv, void* envp))
+]
+
 { #category : #'accessing platform' }
 LibPTerm >> unixModuleName [
-	^ self moduleName
+	^ 'libtty.so'
 ]
 
 { #category : #lib }
