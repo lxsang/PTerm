@@ -201,7 +201,9 @@ PTerm >> xspawn: argv env:envs [
 	xarray ifNotNil: [ xarray := xarray getHandle ].
 	earray ifNotNil: [ earray := earray getHandle ] ifNil: [Smalltalk os environment environ getHandle].
 	master := self lib master.
-	self spawn: (argv first) args: xarray   env: earray.
+	[ pid := self lib ttySpawn: master path: argv first argv: xarray envs: earray ]
+		on: Error do: [ :err |
+			self spawn: argv first args: xarray env: earray ].
 	active := true.
 	Transcript show: 'Command run on process: ', pid asString; cr.
 ]
