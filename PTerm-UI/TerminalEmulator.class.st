@@ -76,7 +76,7 @@ TerminalEmulator class >> environ [
 		collection add: k,'=',v
 	].
 	collection add: 'LANG=en_US.UTF-8'.
-	collection add: 'TERM=linux'.
+	collection add: 'TERM=', TerminalType terminalTypeName .
 	^collection 
 ]
 
@@ -199,7 +199,7 @@ TerminalEmulator class >> openPTerm: term [
 	self cleanUpKeyMap.
 	win := self open.
 	term asProtocolStack
-		push: TerminalEmulatorXterm new;
+		push: TerminalType  new;
 		push: win tty;
 		install;
 		run.
@@ -283,6 +283,11 @@ TerminalEmulator class >> setFont: aFont [
 	font := aFont.
 	self announcer announce: (TerminalEmulatorConfigChange data: font).
 	
+]
+
+{ #category : #accessing }
+TerminalEmulator class >> terminalType [
+	^ TerminalType 
 ]
 
 { #category : #font }
