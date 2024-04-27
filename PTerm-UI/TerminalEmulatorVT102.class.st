@@ -33,6 +33,11 @@ Class {
 	#category : #'PTerm-UI'
 }
 
+{ #category : #'accessing - definition' }
+TerminalEmulatorVT102 class >> fnKeyMap [
+	^ { "To be implemented" } asDictionary 
+]
+
 { #category : #'class initialization' }
 TerminalEmulatorVT102 class >> initialize [
 	"TerminalEmulatorVT102 initialize"

@@ -1256,36 +1256,21 @@ TerminalEmulatorMorph >> preferredExtent [
 ]
 
 { #category : #events }
+TerminalEmulatorMorph >> processFunctionKey: evt [
+	evt isKeystroke ifTrue:[^false].
+	evt key ifNil: [ ^false ].
+	down downcallAll: (TerminalEmulator terminalType fnKeyMap at: evt key name ifAbsent: [ ^false ]).
+	^ true.
+]
+
+{ #category : #events }
 TerminalEmulatorMorph >> processKeyEvent: evt [
 	"Receive a character from the keyboard."
 	| char |
 	scrollOnInput ifTrue: [self pageEnd].
-	char := evt keyValue "keyCharacter asciiValue".
-	evt shiftPressed 
-		ifTrue:
-			[char == 1 ifTrue: [^self pageHome].
-			 char == 4 ifTrue: [^self pageEnd].
-			 char == 11 ifTrue: [^self pageUp: rows // 2].
-			 char == 12 ifTrue: [^self pageDown: rows // 2]].
-	"support both CMD + V/C and CTRL + SHIFT + V/C"
-	(keyboardControlsSelection &
-		((evt commandKeyPressed) | ( (evt controlKeyPressed) & (evt shiftPressed) ) ))
-		ifTrue:
-			[evt keyCharacter asLowercase = $c ifTrue: [^self copySelection].
-			 evt keyCharacter asLowercase = $v ifTrue: [^self sendSelection]].
-	"Handle VT100 control key"
-	(evt controlKeyPressed)
-			ifTrue: [
-				(char = 0) ifTrue:[^self].
-				(char = 32) ifTrue: [ ^ down downcall: 0 ].
-				(char between: 65 and: 93) ifTrue: [ char := char + 32 ].
-				(char between: 97 and: 125) ifTrue: [ ^ down downcall: char - 96 ]
-			] ifFalse:[
-				char == 1 ifTrue: [^down downcallAll:#[27 91 72] ].
-				char == 4 ifTrue: [^down downcallAll:#[27 91 70]  ].
-				char == 11 ifTrue: [^down downcallAll:#[27 91 53 126] ].
-				char == 12 ifTrue: [^down downcallAll: #[27 91 54 126]]
-			].
+	char := evt keyValue.
+	(self processModifierKey: evt) ifTrue: [evt wasHandled: true. ^self ].
+	(self processFunctionKey: evt) ifTrue: [ evt wasHandled: true. ^ self ].
 	(metaSendsEscape and: [evt commandKeyPressed ])
 		ifTrue: [down downcall: Character escape asciiValue].
 	"Cursor keys clash with control keys: differentiate by sending 128+cursorKeyCode."
@@ -1293,6 +1278,38 @@ TerminalEmulatorMorph >> processKeyEvent: evt [
 	(char < 32 and: [evt controlKeyPressed not]) ifTrue: [char := char + 128].
 	down downcall: char.
 	evt wasHandled: true.
+]
+
+{ #category : #events }
+TerminalEmulatorMorph >> processModifierKey: evt [
+	|char|
+	char := evt keyValue.
+	evt shiftPressed 
+		ifTrue:
+			[char == 1 ifTrue: [self pageHome. ^true].
+			 char == 4 ifTrue: [self pageEnd. ^true].
+			 char == 11 ifTrue: [self pageUp: rows // 2. ^true].
+			 char == 12 ifTrue: [self pageDown: rows // 2. ^true]].
+	"support both CMD + V/C and CTRL + SHIFT + V/C"
+	(keyboardControlsSelection &
+		((evt commandKeyPressed) | ( (evt controlKeyPressed) & (evt shiftPressed) ) ))
+		ifTrue:
+			[evt keyCharacter asLowercase = $c ifTrue: [self copySelection. ^true].
+			 evt keyCharacter asLowercase = $v ifTrue: [self sendSelection. ^true]].
+	"Handle VT100 control key"
+	(evt controlKeyPressed)
+			ifTrue: [
+				(char = 0) ifTrue:[^true].
+				(char = 32) ifTrue: [ down downcall: 0. ^true ].
+				(char between: 65 and: 93) ifTrue: [ char := char + 32].
+				(char between: 97 and: 125) ifTrue: [ down downcall: char - 96. ^true ]
+			] ifFalse:[
+				char == 1 ifTrue: [down downcallAll:#[27 91 72]. ^true ].
+				char == 4 ifTrue: [down downcallAll:#[27 91 70]. ^true].
+				char == 11 ifTrue: [down downcallAll:#[27 91 53 126]. ^true].
+				char == 12 ifTrue: [down downcallAll: #[27 91 54 126]. ^true]
+			].
+	^ false
 ]
 
 { #category : #private }

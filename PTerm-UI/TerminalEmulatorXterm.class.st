@@ -14,6 +14,24 @@ Class {
 	#category : #'PTerm-UI'
 }
 
+{ #category : #accessing }
+TerminalEmulatorXterm class >> fnKeyMap [
+^ { 
+ 	#F1  -> "ESC O P" #[27 79 80].
+	#F2  -> "ESC O Q" #[27 79 81].
+	#F3  -> "ESC O R" #[27 79 82].
+	#F4  -> "ESC O S" #[27 79 83].
+	#F5  -> "ESC [ 1 5 ~" #[27 91 49 53 126].
+	#F6  -> "ESC [ 1 7 ~" #[27 91 49 55 126].
+	#F7  -> "ESC [ 1 8 ~" #[27 91 49 56 126].
+	#F8  -> "ESC [ 1 9 ~" #[27 91 49 57 126].
+	#F9  -> "ESC [ 2 0 ~" #[27 91 50 48 126].
+	#F10 -> "ESC [ 2 1 ~" #[27 91 50 49 126].
+	#F11 -> "ESC [ 2 3 ~" #[27 91 50 51 126].
+	#F12 -> "ESC [ 2 4 ~" #[27 91 50 52 126].
+} asDictionary.
+]
+
 { #category : #'class initialization' }
 TerminalEmulatorXterm class >> initialize [
 	"TerminalEmulatorXterm initialize"
