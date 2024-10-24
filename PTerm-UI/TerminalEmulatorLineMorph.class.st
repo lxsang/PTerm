@@ -4713,7 +4713,7 @@ TerminalEmulatorLineMorph >> initialize [
 	"Initialize the receiver with empty contents."
 
 	self contents: TerminalEmulatorTextState new.
-	self announcer when: TerminalEmulatorConfigChange  do: [ :e| self setUpFont. Transcript show: 'font changed']. 
+	self announcer when: TerminalEmulatorConfigChange  do: [ :e| self setUpFont. Transcript show: 'font changed'] for: self. 
 	"self on: Character null ctrl  do: [ :e| Transcript show: 'stroke';cr ]"
 	"cursorColour := Color red."
 ]
