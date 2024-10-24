@@ -101,7 +101,7 @@ PTerm >> pid [
 PTerm >> run [
 	sub := self announcer when: PTermDataEvent  do: [ :e|
 		e data do:[:c|
-			up upcall: c codePoint ]].
+			up upcall: c codePoint ]] for: self.
 	[ self waitForOutput ] forkAt: Processor userSchedulingPriority
 
 ]
@@ -120,7 +120,7 @@ PTerm >> setWinsize: point [
 	buf at: 6 put: 0.
 	buf at: 7 put: 0.
 	buf at: 8 put:0.
-	st := self lib ioct: self master cmd: self lib class TIOCSWINSZ  arg: buf getHandle.
+	st := self lib ioct: master cmd: self lib class TIOCSWINSZ  arg: buf getHandle.
 	st = 0 ifFalse:[^self error: 'Cannot set window size to', point asString ]
 ]
 
