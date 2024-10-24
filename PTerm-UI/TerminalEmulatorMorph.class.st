@@ -1725,7 +1725,7 @@ TerminalEmulatorMorph >> showScrollbar [
 
 	scroll isNil
 		ifTrue:
-			[scroll := ScrollBar new model: self;
+			[scroll := (Smalltalk globals at: #ScrollBar ifAbsent: [ ScrollBarMorph ]) new model: self;
 			setValueSelector: #scrollbarValue:.
 			 self
 				addMorphBack: scroll;

@@ -133,7 +133,7 @@ TerminalEmulator class >> initialize [
 			e data class = LogicalFont ifTrue:[i updateFont]
 			ifFalse:[i updateTheme]
 		]
-	].
+	] for: self.
 ]
 
 { #category : #'world menu' }
