@@ -10,7 +10,7 @@ Require libc compliant with the host pharo VM (32 or 64 bits) to be installed.
 
 ## Install
 
-Install on pharo 9 or 10
+Install on pharo 9 and up:
 
 ```smalltalk
 Metacello new
