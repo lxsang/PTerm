@@ -141,7 +141,7 @@ LibPTerm >> fileActionSettingFor:name [
 
 { #category : #lib }
 LibPTerm >> fnctl: fd action: action flag: flag [
- 	^ self ffiCall: #(int fcntl(int fd, int action, int flag)) module: LibC 
+ 	^ self ffiCall: #(int fcntl(int fd, int action, int flag)) library: LibC fixedArgumentCount: 2
 ]
 
 { #category : #writing }
@@ -156,7 +156,7 @@ LibPTerm >> grantpt: fd [
 
 { #category : #lib }
 LibPTerm >> ioct: fd cmd: cmd arg: arg [
-	^ self ffiCall: #(int ioctl(int fd, ulong cmd, void* arg)) module: LibC
+	^ self ffiCall: #(int ioctl(int fd, ulong cmd, void* arg)) library: LibC fixedArgumentCount: 2
 ]
 
 { #category : #accessing }
@@ -184,7 +184,7 @@ LibPTerm >> master [
 
 { #category : #lib }
 LibPTerm >> open: name mode: flag [
-	^ self ffiCall: #(int open(char* name, int flag)) module: LibC
+	^ self ffiCall: #(int open(char* name, int flag)) library: LibC fixedArgumentCount: 2
 ]
 
 { #category : #lib }
@@ -199,7 +199,7 @@ LibPTerm >> posixSpawn:pid  process: cmd fileAction: ptr fileAttr:fattr argv: ar
 
 { #category : #lib }
 LibPTerm >> print: text [
-	^ self ffiCall: #(void printf(char* text)) module: LibC
+	^ self ffiCall: #(void printf(char* text)) library: LibC fixedArgumentCount: 1
 ]
 
 { #category : #lib }
