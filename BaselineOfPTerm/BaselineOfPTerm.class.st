@@ -21,7 +21,7 @@ BaselineOfPTerm >> baseline: spec [
 
 	spec for: #'pharo13.x' do: [
 		spec package: 'PTerm-Pharo13'.
-		spec group: 'Core' with: #( 'PTerm-Pharo13' ) ]
+		spec group: 'default' with: #( 'PTerm-Pharo13' ) ]
 ]
 
 { #category : #baselines }
