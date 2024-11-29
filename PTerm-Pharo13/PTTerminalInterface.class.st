@@ -7,8 +7,8 @@ Class {
 { #category : #accessing }
 PTTerminalInterface >> openTerminalOn: aPath [
 
-	TerminalEmulator open: '/bin/bash' arguments: { 
+	TerminalEmulator open: '/bin/sh' arguments: { 
 		'-c' .
-		('cd ' , aPath fullName , ' && exec bash -i ')
+		('cd ' , aPath fullName , ' && exec "${SHELL-/bin/sh}" -i ')
 		}
 ]
