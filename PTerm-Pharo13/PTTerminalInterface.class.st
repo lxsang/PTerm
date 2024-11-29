@@ -9,6 +9,6 @@ PTTerminalInterface >> openTerminalOn: aPath [
 
 	TerminalEmulator open: '/bin/sh' arguments: { 
 		'-c' .
-		('cd ' , aPath fullName , ' && exec "${SHELL-/bin/sh}" -i ')
+		('cd ''' , (aPath fullName copyReplaceAll: '''' with: '''\''''') , ''' && exec "${SHELL-/bin/sh}" -i ')
 		}
 ]
