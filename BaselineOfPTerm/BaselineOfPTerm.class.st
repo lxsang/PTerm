@@ -9,7 +9,6 @@ BaselineOfPTerm >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [
-		spec postLoadDoIt: #postload.
 		spec
 			package: 'PTerm-Core'
 			with: [ spec requires: #( 'PTerm-Protocol' ) ];
@@ -20,6 +19,7 @@ BaselineOfPTerm >> baseline: spec [
 			group: 'default' with: #( 'PTerm-Core' 'PTerm-Test' 'PTerm-Fonts' 'PTerm-UI' ) ].
 
 	spec for: #'pharo13.x' do: [
+		spec postLoadDoIt: #postload.
 		spec package: 'PTerm-Pharo13'.
 		spec group: 'default' with: #( 'PTerm-Pharo13' ) ]
 ]
