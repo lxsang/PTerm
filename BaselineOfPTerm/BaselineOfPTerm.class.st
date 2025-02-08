@@ -20,8 +20,8 @@ BaselineOfPTerm >> baseline: spec [
 
 	spec for: #'pharo13.x' do: [
 		spec postLoadDoIt: #postload.
-		spec package: 'PTerm-Pharo13'.
-		spec group: 'default' with: #( 'PTerm-Pharo13' ) ]
+		spec package: 'PTerm-SystemInterface'.
+		spec group: 'default' with: #( 'PTerm-SystemInterface' ) ]
 ]
 
 { #category : #baselines }

@@ -1,7 +1,7 @@
 Class {
 	#name : #PTTerminalInterface,
 	#superclass : #StTerminalInterface,
-	#category : #'PTerm-Pharo13-Utilities'
+	#category : #'PTerm-SystemInterface-Utilities'
 }
 
 { #category : #accessing }
