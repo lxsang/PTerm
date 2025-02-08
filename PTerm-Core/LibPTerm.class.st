@@ -165,7 +165,7 @@ LibPTerm >> kill: pid signal: sig [
 ]
 
 { #category : #'accessing platform' }
-LibPTerm >> macModuleName [ 
+LibPTerm >> macLibraryName [ 
 	^ 'libtty.dylib'
 ]
 
@@ -254,7 +254,7 @@ LibPTerm >> ttySpawn: fdm path: path argv: argv envs: envp [
 ]
 
 { #category : #'accessing platform' }
-LibPTerm >> unixModuleName [
+LibPTerm >> unixLibraryName [
 	^ 'libtty.so'
 ]
 
