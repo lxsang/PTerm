@@ -16,12 +16,13 @@ BaselineOfPTerm >> baseline: spec [
 			package: 'PTerm-Protocol';
 			package: 'PTerm-Fonts';
 			package: 'PTerm-UI';
-			group: 'default' with: #( 'PTerm-Core' 'PTerm-Test' 'PTerm-Fonts' 'PTerm-UI' ) ].
-
-	spec for: #'pharo13.x' do: [
-		spec postLoadDoIt: #postload.
-		spec package: 'PTerm-SystemInterface'.
-		spec group: 'default' with: #( 'PTerm-SystemInterface' ) ]
+			group: 'default' with: #( 'PTerm-Core' 'PTerm-Test' 'PTerm-Fonts' 'PTerm-UI' ).
+			SystemVersion current major  >= 13 ifTrue: [
+				spec postLoadDoIt: #postload.
+				spec package: 'PTerm-SystemInterface'.
+				spec group: 'default' with: #( 'PTerm-SystemInterface' )
+			]
+	 ].
 ]
 
 { #category : #baselines }
